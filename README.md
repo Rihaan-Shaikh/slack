@@ -500,19 +500,9 @@ python -m pytest
 
 ### Known Limitations
 
-- **No cryptographic authentication** — identity is declared via headers, not verified with tokens
-- **In-memory event bus** — SSE state is lost on server restart and does not scale horizontally
-- **No database migrations** — tables are created with `CREATE IF NOT EXISTS`; schema evolution requires manual intervention
-- **No rate limiting** — all endpoints are unthrottled
-- **Single-process architecture** — the event bus and presence tracking are not distributed
-
-### Recommended Hardening & Deployment
-
-- **Frontend:** Vercel is the recommended and easiest way to deploy the Next.js frontend. Connect your GitHub repository to Vercel and it will automatically build and deploy.
-- **Backend:** **Fly.io** is highly recommended for the FastAPI backend and PostgreSQL database. Fly.io provides an excellent free tier and makes it easy to run a Postgres cluster alongside the FastAPI app using a standard `Dockerfile`.
-- **Database:** If not using Fly.io's Postgres, Supabase or Neon are great serverless PostgreSQL alternatives.
-- Integrate Supabase Auth or similar for JWT-based authentication
-- Replace in-memory event bus with Redis Pub/Sub for horizontal scaling
-- Add Alembic or similar for database migration management
-- Implement rate limiting on mutation endpoints
-- Add structured logging (e.g., structlog) and error monitoring (e.g., Sentry)
+- **Authentication:** Currently uses header-based identity (`X-User-*`) rather than cryptographically signed JWTs or session tokens. This is by design for a hackathon environment to eliminate login friction.
+- **Event Streaming:** The SSE event bus operates in-memory. Connection state is lost on server restart and it cannot scale horizontally across multiple instances without a Redis Pub/Sub adapter.
+- **Database Migrations:** Tables are auto-initialized on startup using `CREATE IF NOT EXISTS`. There is no formal migration system (like Alembic), meaning schema evolution requires manual SQL intervention.
+- **API Throttling:** There is no rate limiting on the REST API endpoints.
+- **Single Process:** The application is designed to run as a single process. Features like presence tracking and live collaboration are not distributed.
+- **Error Tracking & Logging:** Standard Python logging is used. There is no structured JSON logging or external error monitoring (like Sentry) integrated.
