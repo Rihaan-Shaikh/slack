@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FAF7F2;
-  --foreground: #221F1A;
-  --card: #FFFFFF;
-  --card-foreground: #221F1A;
-  --border: #E5DFD5;
-  --border-strong: #CEC4B5;
-  --muted: #F3ECE2;
-  --muted-foreground: #6E685D;
-  --accent: #D97706;
+  --background: var(--background);
+  --foreground: var(--foreground);
+  --card: var(--card);
+  --card-foreground: var(--foreground);
+  --border: var(--border);
+  --border-strong: var(--border-strong);
+  --muted: var(--muted);
+  --muted-foreground: var(--muted-foreground);
+  --accent: var(--accent);
 
-  --font-heading: "Lora", "Georgia", "Cambria", "Times New Roman", serif;
-  --font-body: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-lora), "Georgia", "Cambria", "Times New Roman", serif;
+  --font-body: var(--font-jakarta), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
@@ -133,7 +133,7 @@ h1, h2, h3, h4, .font-serif-heading {
   }
   50% {
     r: 39px;
-    stroke: #D97706;
+    stroke: var(--accent);
     stroke-opacity: 0.3;
     stroke-width: 4px;
   }
@@ -221,7 +221,7 @@ path.edge {
 @keyframes amberBeaconPulse {
   0%, 100% {
     r: 35px;
-    stroke: #D97706;
+    stroke: var(--accent);
     stroke-opacity: 0.9;
     stroke-width: 2.5px;
   }

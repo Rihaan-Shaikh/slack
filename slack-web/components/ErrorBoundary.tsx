@@ -40,17 +40,17 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex h-full w-full min-h-[300px] flex-col items-center justify-center p-8 text-center bg-[#FAF7F2]">
-          <div className="max-w-md border border-[#E5DFD5] bg-[#FFFFFF] p-8 shadow-sm">
+        <div className="flex h-full w-full min-h-[300px] flex-col items-center justify-center p-8 text-center bg-[var(--background)]">
+          <div className="max-w-md border border-[var(--border)] bg-[var(--card)] p-8 shadow-sm">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FEE2E2] text-[#991B1B] mb-4">
               <AlertOctagon className="h-6 w-6" />
             </div>
 
-            <h3 className="font-serif-heading text-lg font-bold text-[#221F1A]">
+            <h3 className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
               {this.props.fallbackTitle || "Something went wrong in the workspace"}
             </h3>
 
-            <p className="mt-2 text-xs text-[#6E685D] leading-relaxed">
+            <p className="mt-2 text-xs text-[var(--muted-foreground)] leading-relaxed">
               {this.props.fallbackDescription ||
                 "A rendering error occurred in the interactive graph or workspace canvas. You can retry rendering or return to your dashboard."}
             </p>
@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="mt-6 flex items-center justify-center gap-3">
               <button
                 onClick={this.handleReset}
-                className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-4 py-2 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] transition-colors"
+                className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-2 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] transition-colors"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>Retry Rendering</span>
@@ -72,9 +72,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-4 py-2 text-xs font-semibold text-[#221F1A] hover:bg-[#F3ECE2] transition-colors"
+                className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-4 py-2 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
               >
-                <LayoutDashboard className="h-3.5 w-3.5 text-[#6E685D]" />
+                <LayoutDashboard className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                 <span>Dashboard</span>
               </Link>
             </div>

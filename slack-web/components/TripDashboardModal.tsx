@@ -62,19 +62,19 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#221F1A]/60 p-4 backdrop-blur-xs">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col border border-[#221F1A] bg-[#FAF7F2] shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--foreground)]/60 p-4 backdrop-blur-xs">
+      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col border border-[var(--foreground)] bg-[var(--background)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] bg-[#FFFFFF] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center border border-[#221F1A] bg-[#221F1A] text-[#FAF7F2]">
+            <div className="flex h-9 w-9 items-center justify-center border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]">
               <Compass className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-serif-heading text-xl font-bold text-[#221F1A]">
+              <h2 className="font-serif-heading text-xl font-bold text-[var(--foreground)]">
                 Trip Health & Resilience Dashboard
               </h2>
-              <p className="text-xs text-[#6E685D]">
+              <p className="text-xs text-[var(--muted-foreground)]">
                 Proactive connection risk monitoring across all trips
               </p>
             </div>
@@ -86,7 +86,7 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                   await onSeedDemoTrip();
                   onClose();
                 }}
-                className="hidden sm:flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-2.5 py-1.5 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B]"
+                className="hidden sm:flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-2.5 py-1.5 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B]"
                 title="Seed Alpine Odyssey demo trip"
               >
                 <Compass className="h-3.5 w-3.5 text-[#FCD34D]" />
@@ -99,7 +99,7 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                   await onSeedStressTrip();
                   onClose();
                 }}
-                className="hidden md:flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1.5 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2]"
+                className="hidden md:flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)]"
                 title="Seed 16-booking stress trip"
               >
                 <span>16-Booking Stress</span>
@@ -110,14 +110,14 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                 onClose();
                 onOpenCreateTrip();
               }}
-              className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-1.5 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2]"
+              className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)]"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>New Trip</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-[#6E685D] hover:bg-[#F3ECE2] hover:text-[#221F1A]"
+              className="p-1.5 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
               aria-label="Close dashboard"
             >
               <X className="h-4 w-4" />
@@ -128,9 +128,9 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-6">
           {trips.length === 0 ? (
-            <div className="py-12 text-center text-sm text-[#6E685D]">
-              <Compass className="mx-auto h-8 w-8 text-[#CEC4B5] mb-2" />
-              <p className="font-semibold text-[#221F1A]">No trips recorded yet</p>
+            <div className="py-12 text-center text-sm text-[var(--muted-foreground)]">
+              <Compass className="mx-auto h-8 w-8 text-[var(--border-strong)] mb-2" />
+              <p className="font-semibold text-[var(--foreground)]">No trips recorded yet</p>
               <p className="text-xs text-[#8E887D] mt-1 mb-4">
                 Seed a complete realistic scenario or create a blank trip to begin.
               </p>
@@ -141,7 +141,7 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                       await onSeedDemoTrip();
                       onClose();
                     }}
-                    className="border border-[#221F1A] bg-[#221F1A] px-3.5 py-1.5 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B]"
+                    className="border border-[var(--foreground)] bg-[var(--foreground)] px-3.5 py-1.5 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B]"
                   >
                     Load Demo Trip
                   </button>
@@ -151,7 +151,7 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                     onClose();
                     onOpenCreateTrip();
                   }}
-                  className="border border-[#CEC4B5] bg-[#FFFFFF] px-3.5 py-1.5 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2]"
+                  className="border border-[var(--border-strong)] bg-[var(--card)] px-3.5 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)]"
                 >
                   Create Custom Trip
                 </button>
@@ -172,10 +172,10 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                       onSelectTrip(trip.id);
                       onClose();
                     }}
-                    className={`group relative flex cursor-pointer flex-col justify-between border bg-[#FFFFFF] p-5 transition-all hover:border-[#221F1A] hover:shadow-md ${
+                    className={`group relative flex cursor-pointer flex-col justify-between border bg-[var(--card)] p-5 transition-all hover:border-[var(--foreground)] hover:shadow-md ${
                       isSelected
-                        ? "border-[#221F1A] ring-1 ring-[#221F1A]"
-                        : "border-[#CEC4B5]"
+                        ? "border-[var(--foreground)] ring-1 ring-[var(--foreground)]"
+                        : "border-[var(--border-strong)]"
                     }`}
                   >
                     <div>
@@ -183,11 +183,11 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-serif-heading text-base font-bold text-[#221F1A] group-hover:text-[#D97706] transition-colors">
+                            <h3 className="font-serif-heading text-base font-bold text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors">
                               {trip.name}
                             </h3>
                             {isSelected && (
-                              <span className="bg-[#221F1A] px-1.5 py-0.5 text-[9px] font-bold text-[#FAF7F2]">
+                              <span className="bg-[var(--foreground)] px-1.5 py-0.5 text-[9px] font-bold text-[var(--background)]">
                                 ACTIVE
                               </span>
                             )}
@@ -211,14 +211,14 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                             </span>
                           </div>
                         ) : (
-                          <div className="h-9 w-9 animate-pulse rounded-full bg-[#F3ECE2]" />
+                          <div className="h-9 w-9 animate-pulse rounded-full bg-[var(--muted)]" />
                         )}
                       </div>
 
                       {/* Warning Badge for Thin Connections (PROOF POINT: Proactive without disruptions) */}
                       {hasThinLayover && (
                         <div className="mt-3 flex items-start gap-2 border border-[#FCD34D] bg-[#FFFBEB] p-2.5 text-xs text-[#92400E]">
-                          <AlertTriangle className="h-4 w-4 shrink-0 text-[#D97706] mt-0.5" />
+                          <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--accent)] mt-0.5" />
                           <div className="flex-1">
                             <div className="font-bold text-[#78350F]">
                               {thinConns[0].status === "violated"
@@ -244,13 +244,13 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                     </div>
 
                     {/* Footer Stats & Open Action */}
-                    <div className="mt-4 flex items-center justify-between border-t border-[#F3ECE2] pt-3 text-xs text-[#6E685D]">
+                    <div className="mt-4 flex items-center justify-between border-t border-[var(--muted)] pt-3 text-xs text-[var(--muted-foreground)]">
                       <div className="flex items-center gap-3 text-[11px]">
                         {res && (
                           <>
                             <span>{res.total_edges} connections</span>
                             {res.tight_edges > 0 && (
-                              <span className="font-semibold text-[#D97706]">
+                              <span className="font-semibold text-[var(--accent)]">
                                 {res.tight_edges} tight
                               </span>
                             )}
@@ -263,7 +263,7 @@ export const TripDashboardModal: React.FC<TripDashboardModalProps> = ({
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-[#221F1A] group-hover:translate-x-0.5 transition-transform">
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-[var(--foreground)] group-hover:translate-x-0.5 transition-transform">
                         <span>Open Trip</span>
                         <ArrowRight className="h-3 w-3" />
                       </div>

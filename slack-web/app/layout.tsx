@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${lora.variable} ${plusJakartaSans.variable}`}>
-      <body className="min-h-screen bg-[#FAF7F2] text-[#221F1A] antialiased selection:bg-[#E5DFD5]">
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased selection:bg-[var(--border)]">
         <ErrorBoundary>
           <AuthGuard>{children}</AuthGuard>
         </ErrorBoundary>

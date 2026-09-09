@@ -106,21 +106,21 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#221F1A]/40 p-4">
-      <div className="w-full max-w-md border border-[#CEC4B5] bg-[#FFFFFF] p-6 shadow-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--foreground)]/40 p-4">
+      <div className="w-full max-w-md border border-[var(--border-strong)] bg-[var(--card)] p-6 shadow-none">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center bg-[#B91C1C] text-[#FAF7F2]">
+            <div className="flex h-7 w-7 items-center justify-center bg-[#B91C1C] text-[var(--background)]">
               <AlertTriangle className="h-4 w-4" />
             </div>
-            <h2 className="font-serif-heading text-lg font-bold text-[#221F1A]">
+            <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
               Trigger Disruption
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#6E685D] hover:text-[#221F1A] transition-colors"
+            className="p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />
@@ -136,13 +136,13 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
           {/* Affected Booking Selection */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               Select Disrupted Booking *
             </label>
             <select
               value={selectedBookingId}
               onChange={(e) => setSelectedBookingId(e.target.value)}
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none bg-[#FFFFFF]"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none bg-[var(--card)]"
               required
             >
               {nodes.map((n) => (
@@ -158,7 +158,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
 
           {/* Disruption Type */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">Disruption Type</label>
+            <label className="block font-medium text-[var(--foreground)] mb-1">Disruption Type</label>
             <div className="grid grid-cols-4 gap-1.5">
               {(["delay", "cancellation", "weather", "other"] as DisruptionType[]).map((t) => (
                 <button
@@ -167,8 +167,8 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
                   onClick={() => setDisruptionType(t)}
                   className={`border py-1.5 text-center capitalize text-xs font-medium transition-colors ${
                     disruptionType === t
-                      ? "border-[#221F1A] bg-[#221F1A] text-[#FAF7F2]"
-                      : "border-[#CEC4B5] bg-[#FAF7F2] text-[#6E685D] hover:border-[#221F1A]"
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--border-strong)] bg-[var(--background)] text-[var(--muted-foreground)] hover:border-[var(--foreground)]"
                   }`}
                 >
                   {t}
@@ -180,7 +180,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
           {/* Delay Minutes (conditional) */}
           {disruptionType === "delay" && (
             <div>
-              <label className="block font-medium text-[#221F1A] mb-1">
+              <label className="block font-medium text-[var(--foreground)] mb-1">
                 Delay Duration (minutes) *
               </label>
               <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
                   step="5"
                   value={delayMinutes}
                   onChange={(e) => setDelayMinutes(parseInt(e.target.value) || 0)}
-                  className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                   required
                 />
                 <div className="flex gap-1">
@@ -202,7 +202,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
                       className={`border px-2 py-1.5 text-[10px] font-medium transition-colors ${
                         delayMinutes === mins
                           ? "border-[#B91C1C] bg-[#FEE2E2] text-[#991B1B]"
-                          : "border-[#CEC4B5] bg-[#FFFFFF] text-[#6E685D] hover:border-[#221F1A]"
+                          : "border-[var(--border-strong)] bg-[var(--card)] text-[var(--muted-foreground)] hover:border-[var(--foreground)]"
                       }`}
                     >
                       +{mins}m
@@ -218,9 +218,9 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
 
           {/* Phase 6: Live Open-Meteo Weather Selector (conditional) */}
           {disruptionType === "weather" && (
-            <div className="border border-[#CEC4B5] bg-[#FAF7F2] p-3">
+            <div className="border border-[var(--border-strong)] bg-[var(--background)] p-3">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5 font-bold text-[#221F1A]">
+                <div className="flex items-center gap-1.5 font-bold text-[var(--foreground)]">
                   <CloudRain className="h-4 w-4 text-[#0284C7]" />
                   <span>Live Airport Conditions (Open-Meteo Public API)</span>
                 </div>
@@ -228,7 +228,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
                   type="button"
                   onClick={loadWeather}
                   disabled={isLoadingWeather}
-                  className="flex items-center gap-1 text-[11px] text-[#6E685D] hover:text-[#221F1A]"
+                  className="flex items-center gap-1 text-[11px] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
                 >
                   <RefreshCw className={`h-3 w-3 ${isLoadingWeather ? "animate-spin" : ""}`} />
                   <span>Refresh</span>
@@ -236,7 +236,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
               </div>
 
               {isLoadingWeather && airportWeatherList.length === 0 ? (
-                <div className="py-3 text-center text-xs text-[#6E685D]">
+                <div className="py-3 text-center text-xs text-[var(--muted-foreground)]">
                   Querying live Open-Meteo atmospheric telemetry...
                 </div>
               ) : (
@@ -252,7 +252,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
                           className={`border py-1 text-center font-bold text-xs transition-colors ${
                             isSelected
                               ? "border-[#0284C7] bg-[#E0F2FE] text-[#0369A1]"
-                              : "border-[#CEC4B5] bg-[#FFFFFF] text-[#6E685D] hover:border-[#221F1A]"
+                              : "border-[var(--border-strong)] bg-[var(--card)] text-[var(--muted-foreground)] hover:border-[var(--foreground)]"
                           }`}
                         >
                           {code}
@@ -293,7 +293,7 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
 
           {/* Optional Description */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               Disruption Description / Reason
             </label>
             <input
@@ -301,23 +301,23 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. Flight AF 1681 delayed due to thunderstorm"
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 border-t border-[#E5DFD5] pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="border border-[#CEC4B5] px-3.5 py-1.5 font-medium text-[#6E685D] hover:text-[#221F1A] transition-colors"
+              className="border border-[var(--border-strong)] px-3.5 py-1.5 font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="border border-[#B91C1C] bg-[#B91C1C] px-4 py-1.5 font-medium text-[#FAF7F2] hover:bg-[#991B1B] disabled:opacity-50 transition-colors"
+              className="border border-[#B91C1C] bg-[#B91C1C] px-4 py-1.5 font-medium text-[var(--background)] hover:bg-[#991B1B] disabled:opacity-50 transition-colors"
             >
               {isSubmitting ? "Simulating Ripple..." : "Simulate Disruption"}
             </button>

@@ -146,21 +146,21 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#221F1A]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       {/* Dashboard Top Header */}
-      <header className="border-b border-[#E5DFD5] bg-[#FFFFFF] px-6 py-3.5 sticky top-0 z-40">
+      <header className="border-b border-[var(--border)] bg-[var(--card)] px-6 py-3.5 sticky top-0 z-40">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center border border-[#221F1A] bg-[#221F1A] text-[#FAF7F2]">
+              <div className="flex h-9 w-9 items-center justify-center border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]">
                 <Compass className="h-5 w-5" />
               </div>
-              <span className="font-serif-heading text-xl font-bold tracking-tight text-[#221F1A]">
+              <span className="font-serif-heading text-xl font-bold tracking-tight text-[var(--foreground)]">
                 Slack
               </span>
             </Link>
-            <div className="h-4 w-px bg-[#E5DFD5] hidden sm:block" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#6E685D] hidden sm:inline">
+            <div className="h-4 w-px bg-[var(--border)] hidden sm:block" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] hidden sm:inline">
               Dashboard
             </span>
           </div>
@@ -169,7 +169,7 @@ export default function DashboardPage() {
             <button
               onClick={handleLoadDemoTrip}
               disabled={isDemoLoading}
-              className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-1.5 text-xs font-semibold text-[#221F1A] hover:bg-[#F3ECE2] disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-50 transition-colors"
               title="Load or reuse the standard Alpine Odyssey scenario"
             >
               <Sparkles className="h-3.5 w-3.5 text-[#885434]" />
@@ -178,16 +178,16 @@ export default function DashboardPage() {
 
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-3.5 py-1.5 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] transition-colors"
+              className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-3.5 py-1.5 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>New Trip</span>
             </button>
 
             {currentUser && (
-              <div className="flex items-center gap-2 border-l border-[#E5DFD5] pl-3 ml-1">
+              <div className="flex items-center gap-2 border-l border-[var(--border)] pl-3 ml-1">
                 <div className="text-right hidden sm:block">
-                  <div className="text-xs font-semibold text-[#221F1A] leading-tight">
+                  <div className="text-xs font-semibold text-[var(--foreground)] leading-tight">
                     {currentUser.display_name}
                   </div>
                   <div className="text-[10px] text-[#8E887D] leading-tight">
@@ -197,7 +197,7 @@ export default function DashboardPage() {
                 <button
                   onClick={handleLogout}
                   title="Sign out"
-                  className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FFFFFF] p-1.5 text-[#6E685D] hover:bg-[#FEE2E2] hover:text-[#991B1B] hover:border-[#FCA5A5] transition-colors"
+                  className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--card)] p-1.5 text-[var(--muted-foreground)] hover:bg-[#FEE2E2] hover:text-[#991B1B] hover:border-[#FCA5A5] transition-colors"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                 </button>
@@ -210,18 +210,18 @@ export default function DashboardPage() {
       {/* Main Container */}
       <main className="mx-auto max-w-7xl px-6 py-8">
         {/* Page Title & Stats Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5DFD5] pb-6 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-6 mb-8">
           <div>
-            <h1 className="font-serif-heading text-2xl sm:text-3xl font-bold text-[#221F1A]">
+            <h1 className="font-serif-heading text-2xl sm:text-3xl font-bold text-[var(--foreground)]">
               Trip Health & Resilience Dashboard
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-[#6E685D]">
+            <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
               Proactive connection risk monitoring and graph workspace access across your itineraries.
             </p>
           </div>
-          <div className="flex items-center gap-4 text-xs text-[#6E685D]">
+          <div className="flex items-center gap-4 text-xs text-[var(--muted-foreground)]">
             <div>
-              Total Trips: <strong className="text-[#221F1A]">{trips.length}</strong>
+              Total Trips: <strong className="text-[var(--foreground)]">{trips.length}</strong>
             </div>
           </div>
         </div>
@@ -229,19 +229,19 @@ export default function DashboardPage() {
         {/* Content Section */}
         {isLoading ? (
           <div className="py-20 text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[#221F1A] border-t-transparent mb-3" />
-            <p className="text-xs text-[#6E685D]">Analyzing resilience metrics across your trips...</p>
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent mb-3" />
+            <p className="text-xs text-[var(--muted-foreground)]">Analyzing resilience metrics across your trips...</p>
           </div>
         ) : trips.length === 0 ? (
           /* Empty State */
-          <div className="border border-[#CEC4B5] bg-[#FFFFFF] p-12 text-center max-w-xl mx-auto shadow-xs">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#FAF7F2] border border-[#221F1A] text-[#221F1A] mb-4">
+          <div className="border border-[var(--border-strong)] bg-[var(--card)] p-12 text-center max-w-xl mx-auto shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--background)] border border-[var(--foreground)] text-[var(--foreground)] mb-4">
               <Compass className="h-7 w-7" />
             </div>
-            <h2 className="font-serif-heading text-xl font-bold text-[#221F1A]">
+            <h2 className="font-serif-heading text-xl font-bold text-[var(--foreground)]">
               No trips recorded yet
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-[#6E685D] max-w-md mx-auto leading-relaxed">
+            <p className="mt-2 text-xs sm:text-sm text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
               Start by seeding the complete, realistic Alpine Odyssey demo trip or create your own
               custom itinerary from scratch.
             </p>
@@ -250,14 +250,14 @@ export default function DashboardPage() {
               <button
                 onClick={handleLoadDemoTrip}
                 disabled={isDemoLoading}
-                className="flex items-center gap-2 border border-[#221F1A] bg-[#221F1A] px-4 py-2.5 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] transition-colors"
+                className="flex items-center gap-2 border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-2.5 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] transition-colors"
               >
                 <Sparkles className="h-3.5 w-3.5 text-[#FCD34D]" />
                 <span>{isDemoLoading ? "Seeding..." : "Load Demo Trip (Alpine Odyssey)"}</span>
               </button>
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-center gap-2 border border-[#CEC4B5] bg-[#FFFFFF] px-4 py-2.5 text-xs font-semibold text-[#221F1A] hover:bg-[#F3ECE2] transition-colors"
+                className="flex items-center gap-2 border border-[var(--border-strong)] bg-[var(--card)] px-4 py-2.5 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Create Custom Trip</span>
@@ -276,13 +276,13 @@ export default function DashboardPage() {
                 <div
                   key={trip.id}
                   onClick={() => router.push(`/trips/${trip.id}`)}
-                  className="group relative flex flex-col justify-between border border-[#CEC4B5] bg-[#FFFFFF] p-5 shadow-xs transition-all hover:border-[#221F1A] hover:shadow-md cursor-pointer"
+                  className="group relative flex flex-col justify-between border border-[var(--border-strong)] bg-[var(--card)] p-5 shadow-xs transition-all hover:border-[var(--foreground)] hover:shadow-md cursor-pointer"
                 >
                   <div>
                     {/* Header Row: Title & Resilience */}
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h2 className="font-serif-heading text-lg font-bold text-[#221F1A] group-hover:text-[#2B5B84] transition-colors line-clamp-2">
+                        <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)] group-hover:text-[#2B5B84] transition-colors line-clamp-2">
                           {trip.name}
                         </h2>
                         <div className="mt-1 flex items-center gap-2 text-[11px] text-[#8E887D]">
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                           </span>
                         </div>
                       ) : (
-                        <div className="h-9 w-9 animate-pulse rounded-full bg-[#F3ECE2]" />
+                        <div className="h-9 w-9 animate-pulse rounded-full bg-[var(--muted)]" />
                       )}
                     </div>
 
@@ -313,7 +313,7 @@ export default function DashboardPage() {
                     {hasThinLayover && (
                       <div className="mt-4 border border-[#FCD34D] bg-[#FFFBEB] p-2.5 text-xs text-[#92400E]">
                         <div className="flex items-center gap-1.5 font-bold text-[#78350F]">
-                          <AlertTriangle className="h-3.5 w-3.5 text-[#D97706] shrink-0" />
+                          <AlertTriangle className="h-3.5 w-3.5 text-[var(--accent)] shrink-0" />
                           <span>
                             {thinConns[0].status === "violated"
                               ? "Critical Layover Violation"
@@ -337,12 +337,12 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Card Bottom Actions */}
-                  <div className="mt-6 pt-4 border-t border-[#E5DFD5] flex items-center justify-between">
+                  <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/trips/${trip.id}/settings`}
                         onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 border border-[#CEC4B5] bg-[#FFFFFF] text-[#6E685D] hover:text-[#221F1A] hover:bg-[#F3ECE2] transition-colors"
+                        className="p-1.5 border border-[var(--border-strong)] bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
                         title="Trip Settings"
                       >
                         <Settings className="h-3.5 w-3.5" />
@@ -350,14 +350,14 @@ export default function DashboardPage() {
 
                       <button
                         onClick={(e) => handleDeleteTrip(e, trip.id, trip.name)}
-                        className="p-1.5 border border-[#CEC4B5] bg-[#FFFFFF] text-[#6E685D] hover:text-[#991B1B] hover:bg-[#FEE2E2] hover:border-[#FCA5A5] transition-colors"
+                        className="p-1.5 border border-[var(--border-strong)] bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[#991B1B] hover:bg-[#FEE2E2] hover:border-[#FCA5A5] transition-colors"
                         title="Delete Trip"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs font-semibold text-[#221F1A] group-hover:translate-x-0.5 transition-transform">
+                    <div className="flex items-center gap-1 text-xs font-semibold text-[var(--foreground)] group-hover:translate-x-0.5 transition-transform">
                       <span>Open Workspace</span>
                       <ArrowRight className="h-3.5 w-3.5" />
                     </div>

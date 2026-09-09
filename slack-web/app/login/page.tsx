@@ -79,12 +79,12 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen bg-[var(--background)] flex flex-col items-center justify-center p-6">
       {/* Logo */}
       <div className="mb-8 text-center">
         <div className="inline-flex items-center gap-2 mb-2">
           <span className="text-3xl">✈️</span>
-          <h1 className="text-2xl font-bold text-[#221F1A] tracking-tight">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">
             Slack
           </h1>
         </div>
@@ -95,8 +95,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md space-y-6">
         {/* Sign-in card */}
-        <div className="bg-white rounded-2xl border border-[#E5DFD5] shadow-sm p-8">
-          <h2 className="text-lg font-semibold text-[#221F1A] mb-6">
+        <div className="bg-white rounded-2xl border border-[var(--border)] shadow-sm p-8">
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-6">
             Sign in
           </h2>
 
@@ -122,7 +122,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-[#D5CEC5] bg-[#FDFCF9] text-[#221F1A] placeholder:text-[#B0AAA2] focus:outline-none focus:ring-2 focus:ring-[#221F1A]/20 focus:border-[#221F1A] transition-all text-sm"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-[#D5CEC5] bg-[#FDFCF9] text-[var(--foreground)] placeholder:text-[#B0AAA2] focus:outline-none focus:ring-2 focus:ring-[var(--foreground)]/20 focus:border-[var(--foreground)] transition-all text-sm"
               />
             </div>
             <div>
@@ -140,13 +140,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-[#D5CEC5] bg-[#FDFCF9] text-[#221F1A] placeholder:text-[#B0AAA2] focus:outline-none focus:ring-2 focus:ring-[#221F1A]/20 focus:border-[#221F1A] transition-all text-sm"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-[#D5CEC5] bg-[#FDFCF9] text-[var(--foreground)] placeholder:text-[#B0AAA2] focus:outline-none focus:ring-2 focus:ring-[var(--foreground)]/20 focus:border-[var(--foreground)] transition-all text-sm"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 rounded-lg bg-[#221F1A] text-white font-medium text-sm hover:bg-[#3A3630] focus:outline-none focus:ring-2 focus:ring-[#221F1A]/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full py-2.5 px-4 rounded-lg bg-[var(--foreground)] text-white font-medium text-sm hover:bg-[#3A3630] focus:outline-none focus:ring-2 focus:ring-[var(--foreground)]/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
@@ -156,7 +156,7 @@ export default function LoginPage() {
             No account?{" "}
             <Link
               href="/signup"
-              className="font-medium text-[#221F1A] underline underline-offset-2 hover:text-[#6B6560] transition-colors"
+              className="font-medium text-[var(--foreground)] underline underline-offset-2 hover:text-[#6B6560] transition-colors"
             >
               Create one
             </Link>
@@ -164,7 +164,7 @@ export default function LoginPage() {
         </div>
 
         {/* Demo quick-login */}
-        <div className="bg-white rounded-2xl border border-[#E5DFD5] shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-[var(--border)] shadow-sm p-6">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-semibold text-[#6B6560] uppercase tracking-widest">
               Judge / Demo Mode

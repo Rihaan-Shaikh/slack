@@ -139,16 +139,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#221F1A]/40 p-4">
-      <div className="w-full max-w-lg border border-[#CEC4B5] bg-[#FFFFFF] p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--foreground)]/40 p-4">
+      <div className="w-full max-w-lg border border-[var(--border-strong)] bg-[var(--card)] p-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3">
-          <h2 className="font-serif-heading text-xl font-bold text-[#221F1A]">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+          <h2 className="font-serif-heading text-xl font-bold text-[var(--foreground)]">
             {editingNode ? "Edit Booking" : "Add Itinerary Booking"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-[#6E685D] hover:text-[#221F1A]"
+            className="p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -163,7 +163,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
           {/* Booking Type Select */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">Booking Type</label>
+            <label className="block font-medium text-[var(--foreground)] mb-1">Booking Type</label>
             <div className="grid grid-cols-4 gap-2">
               {(["flight", "hotel", "transfer", "activity"] as BookingType[]).map((t) => (
                 <button
@@ -172,8 +172,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   onClick={() => setType(t)}
                   className={`border py-1.5 text-center capitalize font-medium transition-colors ${
                     type === t
-                      ? "border-[#221F1A] bg-[#221F1A] text-[#FAF7F2]"
-                      : "border-[#CEC4B5] bg-[#FAF7F2] text-[#6E685D] hover:border-[#221F1A]"
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--border-strong)] bg-[var(--background)] text-[var(--muted-foreground)] hover:border-[var(--foreground)]"
                   }`}
                 >
                   {t}
@@ -184,7 +184,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* Title */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               Title / Description *
             </label>
             <input
@@ -200,14 +200,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   ? "e.g. Heathrow Express to Paddington"
                   : "e.g. British Museum Guided Tour"
               }
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               required
             />
           </div>
 
           {/* Vendor */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               {type === "flight" ? "Airline / Vendor" : type === "hotel" ? "Hotel Chain / Host" : "Vendor / Operator"}
             </label>
             <input
@@ -215,7 +215,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               value={vendor}
               onChange={(e) => setVendor(e.target.value)}
               placeholder="e.g. British Airways, Marriott, Uber"
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
             />
           </div>
 
@@ -223,23 +223,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {type === "flight" && (
             <div className="grid grid-cols-2 gap-3 border-l-2 border-[#2B5B84] pl-3 py-1 bg-[#F5F8FA]">
               <div>
-                <label className="block font-medium text-[#221F1A] mb-1">Flight Number</label>
+                <label className="block font-medium text-[var(--foreground)] mb-1">Flight Number</label>
                 <input
                   type="text"
                   value={flightNumber}
                   onChange={(e) => setFlightNumber(e.target.value)}
                   placeholder="e.g. BA178"
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block font-medium text-[#221F1A] mb-1">Terminal</label>
+                <label className="block font-medium text-[var(--foreground)] mb-1">Terminal</label>
                 <input
                   type="text"
                   value={terminal}
                   onChange={(e) => setTerminal(e.target.value)}
                   placeholder="e.g. Terminal 5"
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 />
               </div>
             </div>
@@ -248,23 +248,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {type === "transfer" && (
             <div className="grid grid-cols-2 gap-3 border-l-2 border-[#2D6A4F] pl-3 py-1 bg-[#F4F9F6]">
               <div>
-                <label className="block font-medium text-[#221F1A] mb-1">Pickup Location</label>
+                <label className="block font-medium text-[var(--foreground)] mb-1">Pickup Location</label>
                 <input
                   type="text"
                   value={pickup}
                   onChange={(e) => setPickup(e.target.value)}
                   placeholder="e.g. LHR Terminal 5"
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block font-medium text-[#221F1A] mb-1">Dropoff Location</label>
+                <label className="block font-medium text-[var(--foreground)] mb-1">Dropoff Location</label>
                 <input
                   type="text"
                   value={dropoff}
                   onChange={(e) => setDropoff(e.target.value)}
                   placeholder="e.g. Paddington Station"
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 />
               </div>
             </div>
@@ -272,33 +272,33 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {type === "hotel" && (
             <div className="border-l-2 border-[#885434] pl-3 py-1 bg-[#FAF6F2]">
-              <label className="block font-medium text-[#221F1A] mb-1">Room / Accommodation Type</label>
+              <label className="block font-medium text-[var(--foreground)] mb-1">Room / Accommodation Type</label>
               <input
                 type="text"
                 value={roomType}
                 onChange={(e) => setRoomType(e.target.value)}
                 placeholder="e.g. Deluxe King, Suite"
-                className="w-full border border-[#CEC4B5] bg-[#FFFFFF] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] bg-[var(--card)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
           )}
 
           {type === "activity" && (
             <div className="border-l-2 border-[#6D3A6D] pl-3 py-1 bg-[#FAF4FA]">
-              <label className="block font-medium text-[#221F1A] mb-1">Ticket / Tour Tier</label>
+              <label className="block font-medium text-[var(--foreground)] mb-1">Ticket / Tour Tier</label>
               <input
                 type="text"
                 value={ticketType}
                 onChange={(e) => setTicketType(e.target.value)}
                 placeholder="e.g. Priority Admission, Guided"
-                className="w-full border border-[#CEC4B5] bg-[#FFFFFF] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] bg-[var(--card)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
           )}
 
           {/* Location */}
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               {type === "flight" ? "Airport / Route" : type === "hotel" ? "Address / City" : "Location"}
             </label>
             <input
@@ -306,33 +306,33 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. London Heathrow Airport, Bloomsbury, Trafalgar Square"
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
             />
           </div>
 
           {/* Time Window */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-[#221F1A] mb-1">
+              <label className="block font-medium text-[var(--foreground)] mb-1">
                 {type === "hotel" ? "Check-in Time *" : "Departure / Start Time *"}
               </label>
               <input
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 required
               />
             </div>
             <div>
-              <label className="block font-medium text-[#221F1A] mb-1">
+              <label className="block font-medium text-[var(--foreground)] mb-1">
                 {type === "hotel" ? "Check-out Time *" : "Arrival / End Time *"}
               </label>
               <input
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 required
               />
             </div>
@@ -341,41 +341,41 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Cost and Cancellation */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-[#221F1A] mb-1">Cost ($)</label>
+              <label className="block font-medium text-[var(--foreground)] mb-1">Cost ($)</label>
               <input
                 type="number"
                 step="0.01"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
                 placeholder="e.g. 150.00"
-                className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block font-medium text-[#221F1A] mb-1">Cancellation Policy</label>
+              <label className="block font-medium text-[var(--foreground)] mb-1">Cancellation Policy</label>
               <input
                 type="text"
                 value={cancellationPolicy}
                 onChange={(e) => setCancellationPolicy(e.target.value)}
                 placeholder="e.g. Refundable until 24h prior"
-                className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 border-t border-[#E5DFD5] pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="border border-[#CEC4B5] px-3.5 py-1.5 font-medium text-[#6E685D] hover:text-[#221F1A]"
+              className="border border-[var(--border-strong)] px-3.5 py-1.5 font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="border border-[#221F1A] bg-[#221F1A] px-4 py-1.5 font-medium text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-50"
+              className="border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-1.5 font-medium text-[var(--background)] hover:bg-[#38332B] disabled:opacity-50"
             >
               {isSubmitting ? "Saving..." : editingNode ? "Update Booking" : "Add to Graph"}
             </button>

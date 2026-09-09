@@ -85,7 +85,7 @@ export const ActivityFeedDrawer: React.FC<ActivityFeedDrawerProps> = ({
       case "DEPENDENCY_DELETED":
         return <GitBranch className="h-3.5 w-3.5 text-[#475569]" />;
       case "DISRUPTION_TRIGGERED":
-        return <AlertTriangle className="h-3.5 w-3.5 text-[#D97706]" />;
+        return <AlertTriangle className="h-3.5 w-3.5 text-[var(--accent)]" />;
       case "DISRUPTION_RESOLVED":
         return <CheckCircle2 className="h-3.5 w-3.5 text-[#059669]" />;
       case "RECOVERY_APPLIED":
@@ -95,28 +95,28 @@ export const ActivityFeedDrawer: React.FC<ActivityFeedDrawerProps> = ({
       case "MEMBER_REMOVED":
         return <UserPlus className="h-3.5 w-3.5 text-[#0D9488]" />;
       default:
-        return <History className="h-3.5 w-3.5 text-[#6E685D]" />;
+        return <History className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />;
     }
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-[#221F1A] bg-[#FAF7F2] shadow-2xl animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-[var(--foreground)] bg-[var(--background)] shadow-2xl animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#E5DFD5] p-4 bg-[#F3ECE2]">
+      <div className="flex items-center justify-between border-b border-[var(--border)] p-4 bg-[var(--muted)]">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center bg-[#221F1A] text-[#FAF7F2]">
+          <div className="flex h-7 w-7 items-center justify-center bg-[var(--foreground)] text-[var(--background)]">
             <History className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="font-serif-heading text-sm font-bold text-[#221F1A]">
+            <h2 className="font-serif-heading text-sm font-bold text-[var(--foreground)]">
               Activity Feed
             </h2>
-            <p className="text-[10px] text-[#6E685D] truncate max-w-[200px]">{trip.name}</p>
+            <p className="text-[10px] text-[var(--muted-foreground)] truncate max-w-[200px]">{trip.name}</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1 text-[#6E685D] hover:text-[#221F1A] transition-colors"
+          className="p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
@@ -137,14 +137,14 @@ export const ActivityFeedDrawer: React.FC<ActivityFeedDrawerProps> = ({
         {activities.map((item, idx) => (
           <div
             key={item.id || idx}
-            className="flex items-start gap-2.5 border border-[#E5DFD5] bg-[#FFFFFF] p-2.5 shadow-2xs text-xs"
+            className="flex items-start gap-2.5 border border-[var(--border)] bg-[var(--card)] p-2.5 shadow-2xs text-xs"
           >
-            <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#F3ECE2] shrink-0">
+            <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--muted)] shrink-0">
               {getActionIcon(item.action_type)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className="font-bold text-[#221F1A] truncate">{item.actor_name}</span>
+                <span className="font-bold text-[var(--foreground)] truncate">{item.actor_name}</span>
                 <span className="text-[10px] font-mono text-[#8E887D] shrink-0">
                   {formatRelativeTime(item.created_at)}
                 </span>
@@ -156,7 +156,7 @@ export const ActivityFeedDrawer: React.FC<ActivityFeedDrawerProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-[#E5DFD5] p-3 bg-[#FAF7F2] text-center">
+      <div className="border-t border-[var(--border)] p-3 bg-[var(--background)] text-center">
         <span className="text-[10px] text-[#8E887D] flex items-center justify-center gap-1">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#059669] animate-pulse" />
           Live event synchronization active

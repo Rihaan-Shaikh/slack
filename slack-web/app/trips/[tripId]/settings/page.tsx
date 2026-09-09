@@ -16,7 +16,7 @@ import {
   Save,
   AlertTriangle,
 } from "lucide-react";
-import { Trip, TripMember, RoleType, AuthUser } from "@/lib/types";
+import { Trip, TripMember, RoleType, AuthUser, Disruption } from "@/lib/types";
 import {
   getTrip,
   updateTrip,
@@ -25,6 +25,7 @@ import {
   inviteTripMember,
   removeTripMember,
   logoutUser,
+  listResolvedDisruptions,
 } from "@/lib/api";
 import { getAuthUser } from "@/lib/auth";
 
@@ -43,6 +44,7 @@ export default function TripSettingsPage() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [tripName, setTripName] = useState("");
   const [members, setMembers] = useState<TripMember[]>([]);
+  const [resolvedDisruptions, setResolvedDisruptions] = useState<Disruption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingName, setIsSavingName] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -75,13 +77,15 @@ export default function TripSettingsPage() {
     if (!tripId) return;
     try {
       setIsLoading(true);
-      const [fetchedTrip, fetchedMembers] = await Promise.all([
+      const [fetchedTrip, fetchedMembers, fetchedDisruptions] = await Promise.all([
         getTrip(tripId),
         listTripMembers(tripId),
+        listResolvedDisruptions(tripId),
       ]);
       setTrip(fetchedTrip);
       setTripName(fetchedTrip.name);
       setMembers(fetchedMembers);
+      setResolvedDisruptions(fetchedDisruptions);
     } catch (err) {
       addToast(err instanceof Error ? err.message : "Failed to load trip settings", "error");
     } finally {
@@ -184,27 +188,27 @@ export default function TripSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#FAF7F2]">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[#221F1A] border-t-transparent mb-3" />
+      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent mb-3" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#221F1A]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       {/* Settings Top Header */}
-      <header className="border-b border-[#E5DFD5] bg-[#FFFFFF] px-6 py-3.5 sticky top-0 z-40">
+      <header className="border-b border-[var(--border)] bg-[var(--card)] px-6 py-3.5 sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href={`/trips/${tripId}`}
-              className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1.5 text-xs font-semibold text-[#221F1A] hover:bg-[#F3ECE2] transition-colors"
+              className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Back to Workspace</span>
             </Link>
-            <div className="h-4 w-px bg-[#E5DFD5]" />
-            <span className="font-serif-heading text-lg font-bold text-[#221F1A] truncate max-w-sm">
+            <div className="h-4 w-px bg-[var(--border)]" />
+            <span className="font-serif-heading text-lg font-bold text-[var(--foreground)] truncate max-w-sm">
               {trip?.name || "Trip Settings"}
             </span>
           </div>
@@ -212,7 +216,7 @@ export default function TripSettingsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyShareLink}
-              className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-1.5 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2] transition-colors"
+              className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
             >
               {copiedLink ? <Check className="h-3.5 w-3.5 text-[#15803D]" /> : <Copy className="h-3.5 w-3.5" />}
               <span>{copiedLink ? "Link Copied" : "Copy Permlink"}</span>
@@ -224,21 +228,21 @@ export default function TripSettingsPage() {
       {/* Main Container */}
       <main className="mx-auto max-w-5xl px-6 py-10 space-y-8">
         <div>
-          <h1 className="font-serif-heading text-3xl font-bold text-[#221F1A]">Trip Settings</h1>
-          <p className="mt-1 text-xs sm:text-sm text-[#6E685D]">
+          <h1 className="font-serif-heading text-3xl font-bold text-[var(--foreground)]">Trip Settings</h1>
+          <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
             Manage itinerary general details, traveler collaboration permissions, and security.
           </p>
         </div>
 
         {/* Section 1: General Details */}
-        <section className="border border-[#E5DFD5] bg-[#FFFFFF] p-6 shadow-xs">
-          <h2 className="font-serif-heading text-lg font-bold text-[#221F1A] border-b border-[#E5DFD5] pb-3 mb-4">
+        <section className="border border-[var(--border)] bg-[var(--card)] p-6 shadow-xs">
+          <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-3 mb-4">
             General Details
           </h2>
 
           <form onSubmit={handleUpdateName} className="max-w-xl space-y-4">
             <div>
-              <label htmlFor="trip-name-input" className="block text-xs font-semibold uppercase tracking-wider text-[#6E685D] mb-1.5">
+              <label htmlFor="trip-name-input" className="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">
                 Trip Name
               </label>
               <input
@@ -247,18 +251,21 @@ export default function TripSettingsPage() {
                 value={tripName}
                 onChange={(e) => setTripName(e.target.value)}
                 required
-                className="w-full border border-[#CEC4B5] bg-[#FAF7F2] px-3.5 py-2 text-sm text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="w-full border border-[var(--border-strong)] bg-[var(--background)] px-3.5 py-2 text-sm text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <div className="text-[11px] text-[#8E887D]">
-                Trip ID: <code className="bg-[#F3ECE2] px-1 py-0.5 text-[#221F1A] font-mono">{tripId}</code>
+              <div className="text-[11px] text-[#8E887D] flex gap-4">
+                <span>Trip ID: <code className="bg-[var(--muted)] px-1 py-0.5 text-[var(--foreground)] font-mono">{tripId}</code></span>
+                {trip?.created_at && (
+                  <span>Created: {new Date(trip.created_at).toLocaleDateString()}</span>
+                )}
               </div>
               <button
                 type="submit"
                 disabled={isSavingName || tripName === trip?.name}
-                className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-4 py-2 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-40 transition-colors"
+                className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-2 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] disabled:opacity-40 transition-colors"
               >
                 <Save className="h-3.5 w-3.5" />
                 <span>{isSavingName ? "Saving..." : "Save Changes"}</span>
@@ -268,28 +275,28 @@ export default function TripSettingsPage() {
         </section>
 
         {/* Section 2: Collaborators & Permissions */}
-        <section className="border border-[#E5DFD5] bg-[#FFFFFF] p-6 shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3 mb-4">
-            <h2 className="font-serif-heading text-lg font-bold text-[#221F1A]">
+        <section className="border border-[var(--border)] bg-[var(--card)] p-6 shadow-xs">
+          <div className="flex items-center justify-between border-b border-[var(--border)] pb-3 mb-4">
+            <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
               Collaborators & Permissions
             </h2>
-            <span className="text-xs text-[#6E685D]">
+            <span className="text-xs text-[var(--muted-foreground)]">
               {members.length} Collaborator{members.length === 1 ? "" : "s"}
             </span>
           </div>
 
           {/* Members List */}
-          <div className="divide-y divide-[#E5DFD5] border border-[#E5DFD5] mb-6">
+          <div className="divide-y divide-[var(--border)] border border-[var(--border)] mb-6">
             {members.length === 0 ? (
               <div className="p-4 text-xs text-[#8E887D] text-center">
                 No external collaborators invited yet.
               </div>
             ) : (
               members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3.5 bg-[#FAF7F2]">
+                <div key={member.id} className="flex items-center justify-between p-3.5 bg-[var(--background)]">
                   <div>
-                    <div className="text-xs font-bold text-[#221F1A]">{member.name}</div>
-                    <div className="text-[11px] text-[#6E685D]">{member.email}</div>
+                    <div className="text-xs font-bold text-[var(--foreground)]">{member.name}</div>
+                    <div className="text-[11px] text-[var(--muted-foreground)]">{member.email}</div>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -321,14 +328,14 @@ export default function TripSettingsPage() {
           </div>
 
           {/* Invite Form */}
-          <form onSubmit={handleInviteMember} className="border border-[#E5DFD5] bg-[#FAF7F2] p-4">
-            <h3 className="text-xs font-bold text-[#221F1A] uppercase tracking-wider mb-3">
+          <form onSubmit={handleInviteMember} className="border border-[var(--border)] bg-[var(--background)] p-4">
+            <h3 className="text-xs font-bold text-[var(--foreground)] uppercase tracking-wider mb-3">
               Invite Collaborator
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label htmlFor="invite-name-input" className="block text-[11px] text-[#6E685D] mb-1">
+                <label htmlFor="invite-name-input" className="block text-[11px] text-[var(--muted-foreground)] mb-1">
                   Traveler Name
                 </label>
                 <input
@@ -338,12 +345,12 @@ export default function TripSettingsPage() {
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   required
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-1.5 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] px-3 py-1.5 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="invite-email-input" className="block text-[11px] text-[#6E685D] mb-1">
+                <label htmlFor="invite-email-input" className="block text-[11px] text-[var(--muted-foreground)] mb-1">
                   Email Address
                 </label>
                 <input
@@ -353,19 +360,19 @@ export default function TripSettingsPage() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   required
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-1.5 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] px-3 py-1.5 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="invite-role-select" className="block text-[11px] text-[#6E685D] mb-1">
+                <label htmlFor="invite-role-select" className="block text-[11px] text-[var(--muted-foreground)] mb-1">
                   Permission Role
                 </label>
                 <select
                   id="invite-role-select"
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as RoleType)}
-                  className="w-full border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-1.5 text-xs font-semibold text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                  className="w-full border border-[var(--border-strong)] bg-[var(--card)] px-3 py-1.5 text-xs font-semibold text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
                 >
                   <option value="editor">Editor (Can edit bookings & simulate)</option>
                   <option value="viewer">Viewer (Read-only, blocked server-side)</option>
@@ -378,7 +385,7 @@ export default function TripSettingsPage() {
               <button
                 type="submit"
                 disabled={isInviting || !inviteEmail || !inviteName}
-                className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-3.5 py-1.5 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-40 transition-colors"
+                className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-3.5 py-1.5 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] disabled:opacity-40 transition-colors"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 <span>{isInviting ? "Inviting..." : "Send Invitation"}</span>
@@ -387,7 +394,30 @@ export default function TripSettingsPage() {
           </form>
         </section>
 
-        {/* Section 3: Danger Zone */}
+        {/* Section 3: Disruption History */}
+        <section className="border border-[var(--border)] bg-[var(--card)] p-6 shadow-xs">
+          <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)] border-b border-[var(--border)] pb-3 mb-4">
+            Disruption History
+          </h2>
+          
+          <div className="space-y-3">
+            {resolvedDisruptions.length === 0 ? (
+              <p className="text-sm text-[var(--muted-foreground)]">No past disruptions recorded.</p>
+            ) : (
+              resolvedDisruptions.map((dis) => (
+                <div key={dis.id} className="border border-[var(--border-strong)] bg-[var(--background)] p-3 flex justify-between items-center">
+                  <div>
+                    <span className="text-xs font-bold uppercase text-[var(--muted-foreground)] mr-2">{dis.disruption_type}</span>
+                    <span className="text-sm font-semibold">{dis.delay_minutes ? `Delayed by ${dis.delay_minutes}m` : 'Disrupted'}</span>
+                  </div>
+                  {dis.resolved_at && <span className="text-xs text-[var(--muted-foreground)]">Resolved: {new Date(dis.resolved_at).toLocaleString()}</span>}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        {/* Section 4: Danger Zone */}
         <section className="border border-[#FCA5A5] bg-[#FFF5F5] p-6 shadow-xs">
           <div className="flex items-center gap-2 text-[#991B1B] mb-2">
             <AlertTriangle className="h-5 w-5" />
@@ -401,7 +431,7 @@ export default function TripSettingsPage() {
           <button
             onClick={handleDeleteTrip}
             disabled={isDeleting}
-            className="flex items-center gap-1.5 border border-[#B91C1C] bg-[#B91C1C] px-4 py-2 text-xs font-semibold text-[#FFFFFF] hover:bg-[#991B1B] disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 border border-[#B91C1C] bg-[#B91C1C] px-4 py-2 text-xs font-semibold text-[var(--card)] hover:bg-[#991B1B] disabled:opacity-50 transition-colors"
           >
             <Trash2 className="h-3.5 w-3.5" />
             <span>{isDeleting ? "Deleting Trip..." : "Delete This Trip"}</span>

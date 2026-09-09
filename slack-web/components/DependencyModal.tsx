@@ -81,13 +81,13 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#221F1A]/40 p-4">
-      <div className="w-full max-w-md border border-[#CEC4B5] bg-[#FFFFFF] p-6">
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3">
-          <h2 className="font-serif-heading text-lg font-bold text-[#221F1A]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--foreground)]/40 p-4">
+      <div className="w-full max-w-md border border-[var(--border-strong)] bg-[var(--card)] p-6">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+          <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
             Add Dependency Edge
           </h2>
-          <button onClick={onClose} className="p-1 text-[#6E685D] hover:text-[#221F1A]">
+          <button onClick={onClose} className="p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -100,11 +100,11 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">From Booking (Origin)</label>
+            <label className="block font-medium text-[var(--foreground)] mb-1">From Booking (Origin)</label>
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
             >
               {nodes.map((n) => (
                 <option key={n.id} value={n.id}>
@@ -119,11 +119,11 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">To Booking (Downstream)</label>
+            <label className="block font-medium text-[var(--foreground)] mb-1">To Booking (Downstream)</label>
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
             >
               {nodes.map((n) => (
                 <option key={n.id} value={n.id} disabled={n.id === fromId}>
@@ -134,8 +134,8 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
           </div>
 
           {previewGap != null && (
-            <div className="bg-[#FAF7F2] p-2.5 border border-[#E5DFD5] text-[11px] text-[#6E685D]">
-              <span className="font-medium text-[#221F1A]">Temporal Gap:</span> {previewGap} minutes between arrival and departure.
+            <div className="bg-[var(--background)] p-2.5 border border-[var(--border)] text-[11px] text-[var(--muted-foreground)]">
+              <span className="font-medium text-[var(--foreground)]">Temporal Gap:</span> {previewGap} minutes between arrival and departure.
               {previewGap < minBuffer && (
                 <span className="block mt-1 font-semibold text-[#B91C1C]">
                   Warning: Real gap ({previewGap}m) is less than minimum buffer ({minBuffer}m). This edge will be Violated.
@@ -145,7 +145,7 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
           )}
 
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               Minimum Required Buffer (minutes) *
             </label>
             <input
@@ -154,7 +154,7 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
               step="5"
               value={minBuffer}
               onChange={(e) => setMinBuffer(parseInt(e.target.value) || 0)}
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               required
             />
             <span className="text-[10px] text-[#8E887D]">
@@ -163,11 +163,11 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
           </div>
 
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">Dependency Type</label>
+            <label className="block font-medium text-[var(--foreground)] mb-1">Dependency Type</label>
             <select
               value={depType}
               onChange={(e) => setDepType(e.target.value as DependencyType)}
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
             >
               <option value="temporal">Temporal (Time sequence)</option>
               <option value="location">Location (Physical transit)</option>
@@ -175,18 +175,18 @@ export const DependencyModal: React.FC<DependencyModalProps> = ({
             </select>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-[#E5DFD5] pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="border border-[#CEC4B5] px-3.5 py-1.5 font-medium text-[#6E685D] hover:text-[#221F1A]"
+              className="border border-[var(--border-strong)] px-3.5 py-1.5 font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="border border-[#221F1A] bg-[#221F1A] px-4 py-1.5 font-medium text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-50"
+              className="border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-1.5 font-medium text-[var(--background)] hover:bg-[#38332B] disabled:opacity-50"
             >
               {isSubmitting ? "Adding..." : "Add Dependency Edge"}
             </button>

@@ -40,20 +40,20 @@ export const PresenceAvatars: React.FC<PresenceAvatarsProps> = ({
               title={`${user.client_name}${isMe ? " (You)" : ""}`}
             >
               <div
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#FAF7F2] text-[10px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: user.avatar_color || "#221F1A" }}
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--background)] text-[10px] font-bold text-white shadow-xs"
+                style={{ backgroundColor: user.avatar_color || "var(--foreground)" }}
               >
                 {initials}
               </div>
 
               {/* Active green indicator dot */}
-              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-[#FAF7F2] bg-[#10B981]" />
+              <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-[var(--background)] bg-[#10B981]" />
             </div>
           );
         })}
 
         {activeUsers.length > 4 && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#FAF7F2] bg-[#E5DFD5] text-[10px] font-bold text-[#6E685D] shadow-xs">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--background)] bg-[var(--border)] text-[10px] font-bold text-[var(--muted-foreground)] shadow-xs">
             +{activeUsers.length - 4}
           </div>
         )}
@@ -61,14 +61,14 @@ export const PresenceAvatars: React.FC<PresenceAvatarsProps> = ({
 
       {/* Floating tooltip on hover */}
       {hoveredUser && (
-        <div className="pointer-events-none absolute right-0 top-9 z-30 whitespace-nowrap border border-[#221F1A] bg-[#FFFFFF] px-2.5 py-1.5 text-xs shadow-md">
-          <div className="font-medium text-[#221F1A]">
+        <div className="pointer-events-none absolute right-0 top-9 z-30 whitespace-nowrap border border-[var(--foreground)] bg-[var(--card)] px-2.5 py-1.5 text-xs shadow-md">
+          <div className="font-medium text-[var(--foreground)]">
             {hoveredUser.client_name}
             {hoveredUser.client_id === currentClientId && (
               <span className="ml-1 text-[10px] text-[#059669] font-bold">(You)</span>
             )}
           </div>
-          <div className="text-[10px] text-[#6E685D]">
+          <div className="text-[10px] text-[var(--muted-foreground)]">
             Viewing trip • Live sync active
           </div>
         </div>

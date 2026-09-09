@@ -99,23 +99,23 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-lg border border-[#221F1A] bg-[#FAF7F2] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg border border-[var(--foreground)] bg-[var(--background)] p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-4">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center bg-[#221F1A] text-[#FAF7F2]">
+            <div className="flex h-8 w-8 items-center justify-center bg-[var(--foreground)] text-[var(--background)]">
               <Users className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="font-serif-heading text-lg font-bold text-[#221F1A]">
+              <h2 className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
                 Share Trip Itinerary
               </h2>
-              <p className="text-xs text-[#6E685D]">{trip.name}</p>
+              <p className="text-xs text-[var(--muted-foreground)]">{trip.name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#6E685D] hover:text-[#221F1A] transition-colors"
+            className="p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -128,17 +128,17 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         )}
 
         {/* Direct Trip URL */}
-        <div className="mt-4 flex items-center justify-between border border-[#E5DFD5] bg-[#FFFFFF] p-2.5 text-xs">
+        <div className="mt-4 flex items-center justify-between border border-[var(--border)] bg-[var(--card)] p-2.5 text-xs">
           <div className="min-w-0 pr-2">
-            <div className="font-semibold text-[#221F1A]">Permanent Trip URL</div>
-            <div className="font-mono text-[11px] text-[#6E685D] truncate max-w-[280px]">
+            <div className="font-semibold text-[var(--foreground)]">Permanent Trip URL</div>
+            <div className="font-mono text-[11px] text-[var(--muted-foreground)] truncate max-w-[280px]">
               {typeof window !== "undefined" ? `${window.location.origin}/trips/${trip.id}` : `/trips/${trip.id}`}
             </div>
           </div>
           <button
             type="button"
             onClick={() => handleCopy(`${window.location.origin}/trips/${trip.id}`)}
-            className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FAF7F2] px-2.5 py-1 text-[11px] font-semibold text-[#221F1A] hover:bg-[#F3ECE2] transition-colors shrink-0"
+            className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--background)] px-2.5 py-1 text-[11px] font-semibold text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors shrink-0"
           >
             {copiedLink ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
             <span>{copiedLink ? "Copied" : "Copy Link"}</span>
@@ -149,7 +149,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         <form onSubmit={handleInvite} className="mt-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#6E685D]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
                 Name
               </label>
               <input
@@ -158,11 +158,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Aisha or Bob"
                 required
-                className="mt-1 w-full border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="mt-1 w-full border border-[var(--border-strong)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#6E685D]">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
                 Email Address
               </label>
               <input
@@ -171,13 +171,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="colleague@traveler.com"
                 required
-                className="mt-1 w-full border border-[#CEC4B5] bg-[#FFFFFF] px-3 py-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+                className="mt-1 w-full border border-[var(--border-strong)] bg-[var(--card)] px-3 py-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#6E685D] mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">
               Collaboration Role
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -186,14 +186,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 onClick={() => setRole("editor")}
                 className={`flex items-start gap-2 border p-2.5 text-left transition-all ${
                   role === "editor"
-                    ? "border-[#221F1A] bg-[#FFFFFF] shadow-xs"
-                    : "border-[#E5DFD5] bg-[#F3ECE2] opacity-75 hover:opacity-100"
+                    ? "border-[var(--foreground)] bg-[var(--card)] shadow-xs"
+                    : "border-[var(--border)] bg-[var(--muted)] opacity-75 hover:opacity-100"
                 }`}
               >
                 <Edit3 className="h-4 w-4 text-[#2B5B84] mt-0.5 shrink-0" />
                 <div>
-                  <div className="text-xs font-bold text-[#221F1A]">Editor</div>
-                  <div className="text-[10px] text-[#6E685D] leading-tight">
+                  <div className="text-xs font-bold text-[var(--foreground)]">Editor</div>
+                  <div className="text-[10px] text-[var(--muted-foreground)] leading-tight">
                     Can edit bookings, trigger disruptions & apply recoveries
                   </div>
                 </div>
@@ -204,14 +204,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 onClick={() => setRole("viewer")}
                 className={`flex items-start gap-2 border p-2.5 text-left transition-all ${
                   role === "viewer"
-                    ? "border-[#221F1A] bg-[#FFFFFF] shadow-xs"
-                    : "border-[#E5DFD5] bg-[#F3ECE2] opacity-75 hover:opacity-100"
+                    ? "border-[var(--foreground)] bg-[var(--card)] shadow-xs"
+                    : "border-[var(--border)] bg-[var(--muted)] opacity-75 hover:opacity-100"
                 }`}
               >
-                <Eye className="h-4 w-4 text-[#6E685D] mt-0.5 shrink-0" />
+                <Eye className="h-4 w-4 text-[var(--muted-foreground)] mt-0.5 shrink-0" />
                 <div>
-                  <div className="text-xs font-bold text-[#221F1A]">Viewer</div>
-                  <div className="text-[10px] text-[#6E685D] leading-tight">
+                  <div className="text-xs font-bold text-[var(--foreground)]">Viewer</div>
+                  <div className="text-[10px] text-[var(--muted-foreground)] leading-tight">
                     Read-only view of timeline, graph and live sync
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-4 py-2 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-50 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-2 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] disabled:opacity-50 transition-colors cursor-pointer"
             >
               <UserPlus className="h-3.5 w-3.5" />
               <span>{isSubmitting ? "Inviting..." : "Send Invite"}</span>
@@ -241,22 +241,22 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               </span>
               <button
                 onClick={() => handleCopy(generatedLink)}
-                className="flex items-center gap-1 px-2 py-0.5 border border-[#2B5B84] bg-[#FFFFFF] text-[11px] font-semibold text-[#1E3A8A] hover:bg-[#E0EDFA] transition-colors"
+                className="flex items-center gap-1 px-2 py-0.5 border border-[#2B5B84] bg-[var(--card)] text-[11px] font-semibold text-[#1E3A8A] hover:bg-[#E0EDFA] transition-colors"
               >
                 {copiedLink ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
                 <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
               </button>
             </div>
-            <div className="font-mono text-[11px] text-[#221F1A] truncate bg-[#FFFFFF] border border-[#CBD5E1] p-1.5">
+            <div className="font-mono text-[11px] text-[var(--foreground)] truncate bg-[var(--card)] border border-[#CBD5E1] p-1.5">
               {generatedLink}
             </div>
           </div>
         )}
 
         {/* Members List */}
-        <div className="mt-6 border-t border-[#E5DFD5] pt-4">
+        <div className="mt-6 border-t border-[var(--border)] pt-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#6E685D]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
               Current Collaborators ({members.length})
             </h3>
             {isLoading && <span className="text-[11px] text-[#8E887D]">Refreshing...</span>}
@@ -266,28 +266,28 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {members.map((m) => (
               <div
                 key={m.id}
-                className="flex items-center justify-between border border-[#E5DFD5] bg-[#FFFFFF] p-2.5"
+                className="flex items-center justify-between border border-[var(--border)] bg-[var(--card)] p-2.5"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E5DFD5] text-[11px] font-bold text-[#221F1A]">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--border)] text-[11px] font-bold text-[var(--foreground)]">
                     {m.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-[#221F1A]">{m.name}</span>
+                      <span className="text-xs font-bold text-[var(--foreground)]">{m.name}</span>
                       <span
                         className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 border ${
                           m.role === "owner"
-                            ? "border-[#221F1A] bg-[#221F1A] text-[#FAF7F2]"
+                            ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                             : m.role === "editor"
                             ? "border-[#2B5B84] bg-[#F0F5FA] text-[#1E3A8A]"
-                            : "border-[#E5DFD5] bg-[#F3ECE2] text-[#6E685D]"
+                            : "border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)]"
                         }`}
                       >
                         {m.role}
                       </span>
                     </div>
-                    <div className="text-[10px] text-[#6E685D]">{m.email}</div>
+                    <div className="text-[10px] text-[var(--muted-foreground)]">{m.email}</div>
                   </div>
                 </div>
 

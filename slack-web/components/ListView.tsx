@@ -66,9 +66,9 @@ export const ListView: React.FC<ListViewProps> = ({
 
   if (sortedNodes.length === 0) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center border border-dashed border-[#CEC4B5] bg-[#FFFFFF] p-8 text-center">
-        <p className="font-serif-heading text-lg font-medium text-[#221F1A]">No bookings added yet</p>
-        <p className="mt-1 text-xs text-[#6E685D]">
+      <div className="flex h-96 flex-col items-center justify-center border border-dashed border-[var(--border-strong)] bg-[var(--card)] p-8 text-center">
+        <p className="font-serif-heading text-lg font-medium text-[var(--foreground)]">No bookings added yet</p>
+        <p className="mt-1 text-xs text-[var(--muted-foreground)]">
           Add your first flight, hotel, transfer, or activity to begin constructing your trip graph.
         </p>
       </div>
@@ -78,10 +78,10 @@ export const ListView: React.FC<ListViewProps> = ({
   return (
     <div className="mx-auto max-w-5xl py-6 px-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-serif-heading text-xl font-bold text-[#221F1A]">
+        <h2 className="font-serif-heading text-xl font-bold text-[var(--foreground)]">
           Chronological Itinerary
         </h2>
-        <span className="text-xs text-[#6E685D]">
+        <span className="text-xs text-[var(--muted-foreground)]">
           {sortedNodes.length} {sortedNodes.length === 1 ? "booking" : "bookings"} in sequence
         </span>
       </div>
@@ -96,12 +96,12 @@ export const ListView: React.FC<ListViewProps> = ({
           return (
             <div
               key={node.id}
-              className="border border-[#E5DFD5] bg-[#FFFFFF] p-4 transition-colors hover:border-[#CEC4B5]"
+              className="border border-[var(--border)] bg-[var(--card)] p-4 transition-colors hover:border-[var(--border-strong)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   {/* Sequence number */}
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center border border-[#E5DFD5] bg-[#FAF7F2] text-xs font-semibold text-[#6E685D]">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center border border-[var(--border)] bg-[var(--background)] text-xs font-semibold text-[var(--muted-foreground)]">
                     {index + 1}
                   </span>
 
@@ -119,7 +119,7 @@ export const ListView: React.FC<ListViewProps> = ({
                       </span>
                       <h3
                         onClick={() => onSelectNode(node)}
-                        className="cursor-pointer font-serif-heading text-base font-semibold text-[#221F1A] hover:underline"
+                        className="cursor-pointer font-serif-heading text-base font-semibold text-[var(--foreground)] hover:underline"
                       >
                         {node.title}
                       </h3>
@@ -129,7 +129,7 @@ export const ListView: React.FC<ListViewProps> = ({
                     </div>
 
                     {/* Time & Location */}
-                    <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[#6E685D]">
+                    <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[var(--muted-foreground)]">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5 text-[#8E887D]" />
                         <span>
@@ -156,14 +156,14 @@ export const ListView: React.FC<ListViewProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onEditNode(node)}
-                    className="flex items-center gap-1 border border-[#E5DFD5] bg-[#FAF7F2] px-2.5 py-1 text-xs text-[#6E685D] hover:border-[#221F1A] hover:text-[#221F1A] transition-colors"
+                    className="flex items-center gap-1 border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs text-[var(--muted-foreground)] hover:border-[var(--foreground)] hover:text-[var(--foreground)] transition-colors"
                   >
                     <Edit className="h-3 w-3" />
                     Edit
                   </button>
                   <button
                     onClick={() => onDeleteNode(node.id)}
-                    className="flex items-center gap-1 border border-[#E5DFD5] bg-[#FAF7F2] px-2.5 py-1 text-xs text-[#B91C1C] hover:border-[#B91C1C] hover:bg-[#FEE2E2] transition-colors"
+                    className="flex items-center gap-1 border border-[var(--border)] bg-[var(--background)] px-2.5 py-1 text-xs text-[#B91C1C] hover:border-[#B91C1C] hover:bg-[#FEE2E2] transition-colors"
                   >
                     <Trash2 className="h-3 w-3" />
                     Delete
@@ -173,7 +173,7 @@ export const ListView: React.FC<ListViewProps> = ({
 
               {/* Outgoing edges / buffer to downstream bookings */}
               {outgoingEdges.length > 0 && (
-                <div className="mt-3 border-t border-[#F3ECE2] pt-2.5">
+                <div className="mt-3 border-t border-[var(--muted)] pt-2.5">
                   <div className="text-[11px] font-medium text-[#8E887D] mb-1.5">
                     Downstream Connections &amp; Slack:
                   </div>

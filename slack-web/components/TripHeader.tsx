@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Trip, TripResilienceResponse, PresenceUser, AuthUser } from "@/lib/types";
 import { PresenceAvatars } from "./PresenceAvatars";
+import { NotificationCenter } from "./NotificationCenter";
 
 interface TripHeaderProps {
   currentTrip: Trip | null;
@@ -53,6 +54,8 @@ interface TripHeaderProps {
   // Phase 2: Pitch mode toggle in overflow menu
   isPitchMode?: boolean;
   onTogglePitchMode?: () => void;
+  tripName?: string;
+  toasts?: { id: string, message: string }[];
 }
 
 export const TripHeader: React.FC<TripHeaderProps> = ({
@@ -84,6 +87,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
   onLogout,
   isPitchMode = false,
   onTogglePitchMode,
+  toasts = [],
 }) => {
   const [isOverflowOpen, setIsOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
@@ -104,7 +108,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
   }, [isOverflowOpen]);
 
   return (
-    <header className="h-14 border-b border-[#E5DFD5] bg-[#FAF7F2] px-4 sm:px-6 flex items-center justify-between select-none z-30 relative">
+    <header className="h-14 border-b border-[var(--border)] bg-[var(--background)] px-4 sm:px-6 flex items-center justify-between select-none z-30 relative">
       {/* Left: Dashboard link & Trip Selector */}
       <div className="flex items-center gap-3 min-w-0">
         <Link
@@ -112,15 +116,15 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
           className="flex items-center gap-2 group shrink-0"
           title="Return to Trip Health Dashboard"
         >
-          <div className="flex h-8 w-8 items-center justify-center border border-[#221F1A] bg-[#221F1A] text-[#FAF7F2] group-hover:bg-[#38332B] transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] group-hover:bg-[#38332B] transition-colors">
             <Compass className="h-4 w-4" />
           </div>
-          <span className="font-serif-heading text-lg font-bold tracking-tight text-[#221F1A] hidden md:inline">
+          <span className="font-serif-heading text-lg font-bold tracking-tight text-[var(--foreground)] hidden md:inline">
             Slack
           </span>
         </Link>
 
-        <div className="h-4 w-px bg-[#E5DFD5] shrink-0" />
+        <div className="h-4 w-px bg-[var(--border)] shrink-0" />
 
         {/* Trip dropdown selector */}
         <div className="flex items-center gap-1.5 min-w-0">
@@ -128,7 +132,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
             id="trip-header-select"
             value={currentTrip?.id || ""}
             onChange={(e) => onSelectTrip(e.target.value)}
-            className="border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1 text-xs font-bold text-[#221F1A] focus:border-[#221F1A] focus:outline-none max-w-[160px] sm:max-w-[220px] truncate"
+            className="border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1 text-xs font-bold text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none max-w-[160px] sm:max-w-[220px] truncate"
           >
             {trips.map((t) => (
               <option key={t.id} value={t.id}>
@@ -140,7 +144,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
           {currentTrip && (
             <Link
               href={`/trips/${currentTrip.id}/settings`}
-              className="p-1.5 border border-[#CEC4B5] bg-[#FFFFFF] text-[#6E685D] hover:text-[#221F1A] hover:bg-[#F3ECE2] transition-colors shrink-0"
+              className="p-1.5 border border-[var(--border-strong)] bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors shrink-0"
               title="Trip Settings"
             >
               <Settings className="h-3.5 w-3.5" />
@@ -164,13 +168,13 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
       </div>
 
       {/* Center: View Mode Toggle (Graph / List) */}
-      <div className="flex border border-[#CEC4B5] bg-[#FFFFFF] p-0.5 shrink-0 mx-2">
+      <div className="flex border border-[var(--border-strong)] bg-[var(--card)] p-0.5 shrink-0 mx-2">
         <button
           onClick={() => onChangeViewMode("graph")}
           className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors ${
             viewMode === "graph"
-              ? "bg-[#221F1A] text-[#FAF7F2]"
-              : "text-[#6E685D] hover:text-[#221F1A]"
+              ? "bg-[var(--foreground)] text-[var(--background)]"
+              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           }`}
         >
           <GitBranch className="h-3.5 w-3.5" />
@@ -180,8 +184,8 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
           onClick={() => onChangeViewMode("list")}
           className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors ${
             viewMode === "list"
-              ? "bg-[#221F1A] text-[#FAF7F2]"
-              : "text-[#6E685D] hover:text-[#221F1A]"
+              ? "bg-[var(--foreground)] text-[var(--background)]"
+              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           }`}
         >
           <ListIcon className="h-3.5 w-3.5" />
@@ -195,7 +199,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
         <button
           onClick={onOpenAddBooking}
           disabled={isViewer}
-          className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-3 py-1.5 text-xs font-medium text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-3 py-1.5 text-xs font-medium text-[var(--background)] hover:bg-[#38332B] disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
           title={isViewer ? "Viewer role: read-only" : "Add new booking"}
         >
           <Plus className="h-3.5 w-3.5" />
@@ -222,13 +226,15 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
           <button
             onClick={onOpenShare}
             disabled={isViewer}
-            className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1.5 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2] disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+            className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1.5 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
             title={isViewer ? "Viewer role: read-only" : "Share trip with collaborators"}
           >
             <Users className="h-3.5 w-3.5 text-[#2B5B84]" />
             <span className="hidden sm:inline">Share</span>
           </button>
         )}
+        
+        <NotificationCenter toasts={toasts} />
 
         {/* Secondary Overflow Menu ("⋯") */}
         <div className="relative shrink-0" ref={overflowRef}>
@@ -237,8 +243,8 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
             aria-label="More actions"
             className={`p-1.5 border transition-colors ${
               isOverflowOpen
-                ? "border-[#221F1A] bg-[#221F1A] text-[#FAF7F2]"
-                : "border-[#CEC4B5] bg-[#FFFFFF] text-[#6E685D] hover:bg-[#F3ECE2] hover:text-[#221F1A]"
+                ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                : "border-[var(--border-strong)] bg-[var(--card)] text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
             }`}
             title="More actions and views"
           >
@@ -246,7 +252,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
           </button>
 
           {isOverflowOpen && (
-            <div className="absolute right-0 mt-1.5 w-56 border border-[#CEC4B5] bg-[#FFFFFF] py-1 shadow-lg z-50 text-xs text-[#221F1A]">
+            <div className="absolute right-0 mt-1.5 w-56 border border-[var(--border-strong)] bg-[var(--card)] py-1 shadow-lg z-50 text-xs text-[var(--foreground)]">
               {/* Add Dependency */}
               <button
                 onClick={() => {
@@ -254,9 +260,9 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                   onOpenAddDependency();
                 }}
                 disabled={totalBookings < 2 || isViewer}
-                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#F3ECE2] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--muted)] disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Plus className="h-3.5 w-3.5 text-[#6E685D]" />
+                <Plus className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                 <span>Add Dependency Edge</span>
               </button>
 
@@ -267,9 +273,9 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                     setIsOverflowOpen(false);
                     onFitToScreen();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#F3ECE2]"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--muted)]"
                 >
-                  <Maximize2 className="h-3.5 w-3.5 text-[#6E685D]" />
+                  <Maximize2 className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                   <span>Fit Graph to Screen</span>
                 </button>
               )}
@@ -281,10 +287,10 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                     setIsOverflowOpen(false);
                     onToggleAtRiskOnly();
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[#F3ECE2]"
+                  className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[var(--muted)]"
                 >
                   <div className="flex items-center gap-2">
-                    <Filter className="h-3.5 w-3.5 text-[#6E685D]" />
+                    <Filter className="h-3.5 w-3.5 text-[var(--muted-foreground)]" />
                     <span>Filter: At-Risk Only</span>
                   </div>
                   {showAtRiskOnly && <Check className="h-3.5 w-3.5 text-[#15803D]" />}
@@ -298,7 +304,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                     setIsOverflowOpen(false);
                     onOpenActivity();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#F3ECE2]"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[var(--muted)]"
                 >
                   <History className="h-3.5 w-3.5 text-[#885434]" />
                   <span>Activity History Log</span>
@@ -307,7 +313,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
 
               {/* Presence Avatars inside overflow */}
               {activeUsers.length > 0 && (
-                <div className="px-3 py-2 border-t border-[#E5DFD5]">
+                <div className="px-3 py-2 border-t border-[var(--border)]">
                   <div className="text-[10px] uppercase font-bold text-[#8E887D] mb-1">
                     Collaborators ({activeUsers.length})
                   </div>
@@ -318,7 +324,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                 </div>
               )}
 
-              <div className="my-1 border-t border-[#E5DFD5]" />
+              <div className="my-1 border-t border-[var(--border)]" />
 
               {/* Judge Demo Pitch Mode Toggle */}
               {onTogglePitchMode && (
@@ -327,7 +333,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                     setIsOverflowOpen(false);
                     onTogglePitchMode();
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[#F3ECE2]"
+                  className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-[var(--muted)]"
                 >
                   <div className="flex items-center gap-2">
                     <Presentation className="h-3.5 w-3.5 text-[#885434]" />
@@ -348,9 +354,9 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
 
         {/* User Profile & Logout */}
         {currentUser && (
-          <div className="flex items-center gap-2 border-l border-[#E5DFD5] pl-2.5 ml-0.5 shrink-0">
+          <div className="flex items-center gap-2 border-l border-[var(--border)] pl-2.5 ml-0.5 shrink-0">
             <div className="text-right hidden xl:block">
-              <div className="text-xs font-semibold text-[#221F1A] leading-tight truncate max-w-[110px]">
+              <div className="text-xs font-semibold text-[var(--foreground)] leading-tight truncate max-w-[110px]">
                 {currentUser.display_name}
               </div>
               <div className="text-[10px] text-[#8E887D] leading-tight">
@@ -362,7 +368,7 @@ export const TripHeader: React.FC<TripHeaderProps> = ({
                 onClick={onLogout}
                 id="sign-out-btn"
                 title="Sign out"
-                className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FFFFFF] p-1.5 text-[#6E685D] hover:bg-[#FEE2E2] hover:text-[#991B1B] hover:border-[#FCA5A5] transition-colors"
+                className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--card)] p-1.5 text-[var(--muted-foreground)] hover:bg-[#FEE2E2] hover:text-[#991B1B] hover:border-[#FCA5A5] transition-colors"
               >
                 <LogOut className="h-3.5 w-3.5" />
               </button>

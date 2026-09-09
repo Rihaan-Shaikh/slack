@@ -38,7 +38,7 @@ const ToastItem: React.FC<{
   }, [toast.id, onDismiss]);
 
   return (
-    <div className="pointer-events-auto flex items-center justify-between gap-3 border border-[#221F1A] bg-[#FFFFFF] px-4 py-3 text-xs text-[#221F1A] shadow-md">
+    <div className="pointer-events-auto flex items-center justify-between gap-3 border border-[var(--foreground)] bg-[var(--card)] px-4 py-3 text-xs text-[var(--foreground)] shadow-md">
       <div className="flex items-center gap-2">
         {toast.type === "success" ? (
           <CheckCircle2 className="h-4 w-4 text-[#2D6A4F] shrink-0" />
@@ -51,7 +51,7 @@ const ToastItem: React.FC<{
       </div>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="p-0.5 text-[#8E887D] hover:text-[#221F1A] transition-colors"
+        className="p-0.5 text-[#8E887D] hover:text-[var(--foreground)] transition-colors"
         aria-label="Dismiss notification"
       >
         <X className="h-3.5 w-3.5" />

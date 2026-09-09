@@ -42,7 +42,7 @@ const EDGE_STYLES: Record<
   },
   tight: {
     badgeBg: "#FEF3C7",
-    badgeBorder: "#D97706",
+    badgeBorder: "var(--accent)",
     badgeText: "#92400E",
     borderStyle: "border-solid border-[#C05621] border-2",
   },
@@ -127,7 +127,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
       : `${durationMin}m`;
 
   return (
-    <aside className="fixed top-0 right-0 z-40 h-full w-[420px] border-l border-[#CEC4B5] bg-[#FFFFFF] p-6 overflow-y-auto flex flex-col justify-between">
+    <aside className="fixed top-0 right-0 z-40 h-full w-[420px] border-l border-[var(--border-strong)] bg-[var(--card)] p-6 overflow-y-auto flex flex-col justify-between">
       <div>
         {/* Header with Type & Close */}
         <div className="flex items-center justify-between">
@@ -143,7 +143,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
           </span>
           <button
             onClick={onClose}
-            className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1 text-xs text-[#6E685D] hover:border-[#221F1A] hover:text-[#221F1A] hover:bg-[#FAF7F2] transition-colors"
+            className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1 text-xs text-[var(--muted-foreground)] hover:border-[var(--foreground)] hover:text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
             aria-label="Close detail panel"
           >
             <X className="h-3.5 w-3.5" />
@@ -152,13 +152,13 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
         </div>
 
         {/* Booking Title */}
-        <h2 className="mt-3 font-serif-heading text-2xl font-bold leading-tight text-[#221F1A]">
+        <h2 className="mt-3 font-serif-heading text-2xl font-bold leading-tight text-[var(--foreground)]">
           {node.title}
         </h2>
 
         {/* Time Range Prominently Displayed */}
-        <div className="mt-2.5 pb-4 text-xs text-[#6E685D]">
-          <div className="font-semibold text-[#221F1A] text-sm">
+        <div className="mt-2.5 pb-4 text-xs text-[var(--muted-foreground)]">
+          <div className="font-semibold text-[var(--foreground)] text-sm">
             {formatTimeOnly(node.start_time)} - {formatTimeOnly(node.end_time)}
             <span className="ml-2 font-normal text-[#8E887D]">({durationStr})</span>
           </div>
@@ -166,11 +166,11 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
         </div>
 
         {/* Labeled Section 1: Schedule and Location */}
-        <div className="border-t border-[#E5DFD5] pt-3.5">
+        <div className="border-t border-[var(--border)] pt-3.5">
           <div className="text-[11px] font-bold uppercase tracking-wider text-[#8E887D] mb-2">
             Schedule and Location
           </div>
-          <div className="space-y-1.5 text-xs text-[#221F1A]">
+          <div className="space-y-1.5 text-xs text-[var(--foreground)]">
             {node.location && (
               <div className="flex items-start gap-2">
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-[#8E887D] mt-0.5" />
@@ -178,75 +178,75 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
               </div>
             )}
             {node.metadata?.pickup && (
-              <div className="text-xs text-[#6E685D] pl-5">
-                Pickup: <span className="font-medium text-[#221F1A]">{String(node.metadata.pickup)}</span>
+              <div className="text-xs text-[var(--muted-foreground)] pl-5">
+                Pickup: <span className="font-medium text-[var(--foreground)]">{String(node.metadata.pickup)}</span>
               </div>
             )}
             {node.metadata?.dropoff && (
-              <div className="text-xs text-[#6E685D] pl-5">
-                Dropoff: <span className="font-medium text-[#221F1A]">{String(node.metadata.dropoff)}</span>
+              <div className="text-xs text-[var(--muted-foreground)] pl-5">
+                Dropoff: <span className="font-medium text-[var(--foreground)]">{String(node.metadata.dropoff)}</span>
               </div>
             )}
             {node.metadata?.terminal && (
-              <div className="text-xs text-[#6E685D] pl-5">
-                Terminal: <span className="font-medium text-[#221F1A]">{String(node.metadata.terminal)}</span>
+              <div className="text-xs text-[var(--muted-foreground)] pl-5">
+                Terminal: <span className="font-medium text-[var(--foreground)]">{String(node.metadata.terminal)}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Labeled Section 2: Vendor and Cost */}
-        <div className="border-t border-[#E5DFD5] pt-3.5 mt-3.5">
+        <div className="border-t border-[var(--border)] pt-3.5 mt-3.5">
           <div className="text-[11px] font-bold uppercase tracking-wider text-[#8E887D] mb-2">
             Vendor and Cost
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-[#8E887D] block">Provider / Vendor</span>
-              <span className="font-medium text-[#221F1A]">
+              <span className="font-medium text-[var(--foreground)]">
                 {node.vendor || "Standard booking"}
               </span>
             </div>
             <div>
               <span className="text-[#8E887D] block">Recorded Cost</span>
-              <span className="font-medium text-[#221F1A]">
+              <span className="font-medium text-[var(--foreground)]">
                 {node.cost != null ? `$${node.cost.toFixed(2)}` : "Not specified"}
               </span>
             </div>
             {node.metadata?.flight_number && (
               <div className="col-span-2">
                 <span className="text-[#8E887D] block">Flight Identifier</span>
-                <span className="font-medium text-[#221F1A]">{String(node.metadata.flight_number)}</span>
+                <span className="font-medium text-[var(--foreground)]">{String(node.metadata.flight_number)}</span>
               </div>
             )}
             {node.metadata?.room_type && (
               <div className="col-span-2">
                 <span className="text-[#8E887D] block">Room Category</span>
-                <span className="font-medium text-[#221F1A]">{String(node.metadata.room_type)}</span>
+                <span className="font-medium text-[var(--foreground)]">{String(node.metadata.room_type)}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Labeled Section 3: Cancellation Policy */}
-        <div className="border-t border-[#E5DFD5] pt-3.5 mt-3.5">
+        <div className="border-t border-[var(--border)] pt-3.5 mt-3.5">
           <div className="text-[11px] font-bold uppercase tracking-wider text-[#8E887D] mb-1.5">
             Cancellation Policy
           </div>
-          <p className="text-xs text-[#6E685D]">
+          <p className="text-xs text-[var(--muted-foreground)]">
             {node.cancellation_policy || "Standard cancellation terms apply."}
           </p>
         </div>
 
         {/* Labeled Section 4: Connections & Dependencies */}
-        <div className="border-t border-[#E5DFD5] pt-3.5 mt-3.5">
+        <div className="border-t border-[var(--border)] pt-3.5 mt-3.5">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-[#8E887D]">
               Connections &amp; Dependencies
             </div>
             <button
               onClick={() => onAddDependencyFrom(node.id)}
-              className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FFFFFF] px-2 py-0.5 text-[11px] font-medium text-[#221F1A] hover:bg-[#F3ECE2] hover:border-[#221F1A] transition-colors"
+              className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--card)] px-2 py-0.5 text-[11px] font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:border-[var(--foreground)] transition-colors"
             >
               <Plus className="h-3 w-3" />
               Add Connection
@@ -257,7 +257,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
           {relevantSuggestions.length > 0 && (
             <div className="mb-3 space-y-2">
               <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B45309]">
-                <Sparkles className="h-3.5 w-3.5 text-[#D97706]" />
+                <Sparkles className="h-3.5 w-3.5 text-[var(--accent)]" />
                 <span>Suggested Connection</span>
               </div>
               {relevantSuggestions.map((sugg, idx) => {
@@ -281,7 +281,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
                       {onAcceptSuggestion && (
                         <button
                           onClick={() => onAcceptSuggestion(sugg)}
-                          className="flex items-center gap-1 border border-[#D97706] bg-[#D97706] text-[#FFFFFF] px-2 py-0.5 text-[10px] font-bold hover:bg-[#B45309] transition-colors"
+                          className="flex items-center gap-1 border border-[var(--accent)] bg-[var(--accent)] text-[var(--card)] px-2 py-0.5 text-[10px] font-bold hover:bg-[#B45309] transition-colors"
                         >
                           <Check className="h-3 w-3" />
                           <span>Accept (+{sugg.suggested_min_buffer_minutes}m)</span>
@@ -290,7 +290,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
                       {onRejectSuggestion && (
                         <button
                           onClick={() => onRejectSuggestion(sugg)}
-                          className="border border-[#CEC4B5] bg-[#FFFFFF] px-2 py-0.5 text-[10px] text-[#6E685D] hover:bg-[#FAF7F2] transition-colors"
+                          className="border border-[var(--border-strong)] bg-[var(--card)] px-2 py-0.5 text-[10px] text-[var(--muted-foreground)] hover:bg-[var(--background)] transition-colors"
                         >
                           Dismiss
                         </button>
@@ -316,12 +316,12 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
               return (
                 <div
                   key={edge.id}
-                  className={`p-2 bg-[#FFFFFF] ${style.borderStyle} flex items-center justify-between`}
+                  className={`p-2 bg-[var(--card)] ${style.borderStyle} flex items-center justify-between`}
                 >
                   <div>
                     <div className="text-[11px] text-[#8E887D]">Preceding (Incoming):</div>
-                    <div className="font-semibold text-[#221F1A]">{src?.title || "Booking"}</div>
-                    <div className="text-[11px] text-[#6E685D]">
+                    <div className="font-semibold text-[var(--foreground)]">{src?.title || "Booking"}</div>
+                    <div className="text-[11px] text-[var(--muted-foreground)]">
                       Gap: {edge.actual_gap_minutes}m (Min: {edge.min_buffer_minutes}m)
                     </div>
                   </div>
@@ -355,12 +355,12 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
               return (
                 <div
                   key={edge.id}
-                  className={`p-2 bg-[#FFFFFF] ${style.borderStyle} flex items-center justify-between`}
+                  className={`p-2 bg-[var(--card)] ${style.borderStyle} flex items-center justify-between`}
                 >
                   <div>
                     <div className="text-[11px] text-[#8E887D]">Downstream (Outgoing):</div>
-                    <div className="font-semibold text-[#221F1A]">{dest?.title || "Booking"}</div>
-                    <div className="text-[11px] text-[#6E685D]">
+                    <div className="font-semibold text-[var(--foreground)]">{dest?.title || "Booking"}</div>
+                    <div className="text-[11px] text-[var(--muted-foreground)]">
                       Gap: {edge.actual_gap_minutes}m (Min: {edge.min_buffer_minutes}m)
                     </div>
                   </div>
@@ -392,10 +392,10 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
       </div>
 
       {/* Labeled Section 5: Highlighted Upstream & Downstream Slack Row at Bottom */}
-      <div className="mt-6 border-t border-[#E5DFD5] pt-4">
+      <div className="mt-6 border-t border-[var(--border)] pt-4">
         <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
           {/* Upstream Slack Card */}
-          <div className="border border-[#CEC4B5] bg-[#FAF7F2] p-2.5">
+          <div className="border border-[var(--border-strong)] bg-[var(--background)] p-2.5">
             <span className="text-[10px] text-[#8E887D] uppercase font-bold block mb-1">
               Upstream Slack
             </span>
@@ -424,7 +424,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
           </div>
 
           {/* Downstream Slack Card */}
-          <div className="border border-[#CEC4B5] bg-[#FAF7F2] p-2.5">
+          <div className="border border-[var(--border-strong)] bg-[var(--background)] p-2.5">
             <span className="text-[10px] text-[#8E887D] uppercase font-bold block mb-1">
               Downstream Slack
             </span>
@@ -457,7 +457,7 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => onEdit(node)}
-            className="flex-1 flex items-center justify-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-3 py-2 text-xs font-medium text-[#FAF7F2] hover:bg-[#38332B] transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-3 py-2 text-xs font-medium text-[var(--background)] hover:bg-[#38332B] transition-colors"
           >
             <Edit className="h-3.5 w-3.5" />
             <span>Edit Booking</span>

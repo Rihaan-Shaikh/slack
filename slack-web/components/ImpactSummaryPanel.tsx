@@ -53,7 +53,7 @@ const ScoreRing: React.FC<{ score: number; isRecommended: boolean }> = ({
     score >= 75
       ? "#059669" // emerald
       : score >= 50
-      ? "#D97706" // amber
+      ? "var(--accent)" // amber
       : "#DC2626"; // crimson
 
   return (
@@ -63,7 +63,7 @@ const ScoreRing: React.FC<{ score: number; isRecommended: boolean }> = ({
           cx="22"
           cy="22"
           r={radius}
-          stroke="#E5DFD5"
+          stroke="var(--border)"
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -81,7 +81,7 @@ const ScoreRing: React.FC<{ score: number; isRecommended: boolean }> = ({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[12px] font-bold text-[#221F1A]">{score}</span>
+        <span className="text-[12px] font-bold text-[var(--foreground)]">{score}</span>
         <span className="text-[7px] uppercase font-bold text-[#8E887D] -mt-0.5">pts</span>
       </div>
     </div>
@@ -177,33 +177,33 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
 
   return (
     <aside
-      className="fixed top-0 right-0 z-40 h-full w-[460px] border-l border-[#CEC4B5] bg-[#FFFFFF] p-6 overflow-y-auto flex flex-col justify-between shadow-none transition-all duration-300"
+      className="fixed top-0 right-0 z-40 h-full w-[460px] border-l border-[var(--border-strong)] bg-[var(--card)] p-6 overflow-y-auto flex flex-col justify-between shadow-none transition-all duration-300"
       aria-label="Disruption & Recovery Panel"
     >
       <div>
         {/* Header with Title & Navigation */}
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="flex items-center gap-2">
             {activeTab === "recovery_options" ? (
               <button
                 onClick={() => setActiveTab("blast_radius")}
-                className="flex h-6 w-6 items-center justify-center border border-[#E5DFD5] bg-[#FAF7F2] text-[#221F1A] hover:bg-[#E5DFD5] transition-colors"
+                className="flex h-6 w-6 items-center justify-center border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] hover:bg-[var(--border)] transition-colors"
                 title="Back to Blast Radius"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <span className="flex h-6 w-6 items-center justify-center bg-[#B91C1C] text-[#FAF7F2]">
+              <span className="flex h-6 w-6 items-center justify-center bg-[#B91C1C] text-[var(--background)]">
                 <AlertTriangle className="h-3.5 w-3.5" />
               </span>
             )}
-            <span className="font-serif-heading text-lg font-bold text-[#221F1A]">
+            <span className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
               {activeTab === "blast_radius" ? "Disruption Blast Radius" : "Ranked Recovery Engine"}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="flex items-center gap-1 border border-[#E5DFD5] px-2 py-1 text-xs text-[#6E685D] hover:border-[#221F1A] hover:text-[#221F1A] transition-colors"
+            className="flex items-center gap-1 border border-[var(--border)] px-2 py-1 text-xs text-[var(--muted-foreground)] hover:border-[var(--foreground)] hover:text-[var(--foreground)] transition-colors"
             aria-label="Close panel"
           >
             <X className="h-3.5 w-3.5" />
@@ -230,7 +230,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
             </div>
 
             {/* Quick Blast Radius Count */}
-            <div className="mt-3 flex items-center justify-between text-xs text-[#6E685D] px-1">
+            <div className="mt-3 flex items-center justify-between text-xs text-[var(--muted-foreground)] px-1">
               <span>Evaluated downstream connections:</span>
               <div className="flex items-center gap-2 font-medium">
                 {missedList.length > 0 && (
@@ -253,7 +253,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
               </div>
 
               {missedList.length === 0 ? (
-                <p className="border border-[#E5DFD5] bg-[#FAF7F2] p-2.5 text-xs text-[#8E887D] italic">
+                <p className="border border-[var(--border)] bg-[var(--background)] p-2.5 text-xs text-[#8E887D] italic">
                   No connections are classified as completely missed.
                 </p>
               ) : (
@@ -264,7 +264,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                       className="border-2 border-dashed border-[#B91C1C] bg-[#FFF5F5] p-3 text-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-serif-heading text-sm font-bold text-[#221F1A]">
+                        <span className="font-serif-heading text-sm font-bold text-[var(--foreground)]">
                           {item.booking_title}
                         </span>
                         <span className="rounded-full border border-[#B91C1C] bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-bold text-[#991B1B] uppercase">
@@ -281,14 +281,14 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
             </div>
 
             {/* AT RISK Section */}
-            <div className="mt-5 border-t border-[#E5DFD5] pt-4">
+            <div className="mt-5 border-t border-[var(--border)] pt-4">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#92400E] mb-2">
                 <span className="inline-block h-2 w-2 rounded-full bg-[#C05621]" />
                 <span>At Risk Bookings ({atRiskList.length})</span>
               </div>
 
               {atRiskList.length === 0 ? (
-                <p className="border border-[#E5DFD5] bg-[#FAF7F2] p-2.5 text-xs text-[#8E887D] italic">
+                <p className="border border-[var(--border)] bg-[var(--background)] p-2.5 text-xs text-[#8E887D] italic">
                   No connections are at critical risk.
                 </p>
               ) : (
@@ -299,10 +299,10 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                       className="border-2 border-solid border-[#C05621] bg-[#FFFBF0] p-3 text-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-serif-heading text-sm font-bold text-[#221F1A]">
+                        <span className="font-serif-heading text-sm font-bold text-[var(--foreground)]">
                           {item.booking_title}
                         </span>
-                        <span className="rounded-full border border-[#D97706] bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-bold text-[#92400E] uppercase">
+                        <span className="rounded-full border border-[var(--accent)] bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-bold text-[#92400E] uppercase">
                           At Risk (+{item.new_slack_minutes}m)
                         </span>
                       </div>
@@ -317,8 +317,8 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
 
             {/* UNAFFECTED Section */}
             {unaffectedList.length > 0 && (
-              <div className="mt-5 border-t border-[#E5DFD5] pt-3 text-xs text-[#8E887D]">
-                <span className="font-medium text-[#221F1A]">{unaffectedList.length}</span> downstream
+              <div className="mt-5 border-t border-[var(--border)] pt-3 text-xs text-[#8E887D]">
+                <span className="font-medium text-[var(--foreground)]">{unaffectedList.length}</span> downstream
                 booking(s) outside the blast radius remain safely scheduled.
               </div>
             )}
@@ -330,14 +330,14 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
         {/* ========================================================================= */}
         {activeTab === "recovery_options" && (
           <div className="animate-in fade-in duration-200 mt-4 space-y-4">
-            <div className="border border-[#E5DFD5] bg-[#FAF7F2] p-3 text-xs">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-[#6E685D]">
+            <div className="border border-[var(--border)] bg-[var(--background)] p-3 text-xs">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
                 Recovery Target
               </div>
-              <div className="font-serif-heading text-sm font-bold text-[#221F1A] mt-0.5">
+              <div className="font-serif-heading text-sm font-bold text-[var(--foreground)] mt-0.5">
                 Deterministic Fixes for Broken Connections
               </div>
-              <p className="text-[11px] text-[#6E685D] mt-0.5">
+              <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
                 Scored by mathematical weights (Cost: 35%, Time: 30%, Itinerary: 20%, Refund: 15%) + Groq human rationale.
               </p>
             </div>
@@ -348,19 +348,19 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="border border-[#CEC4B5] bg-[#FFFFFF] p-4 skeleton-pulse space-y-3"
+                    className="border border-[var(--border-strong)] bg-[var(--card)] p-4 skeleton-pulse space-y-3"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="h-4 w-24 bg-[#E5DFD5] rounded-none" />
-                      <div className="h-9 w-9 rounded-full bg-[#E5DFD5]" />
+                      <div className="h-4 w-24 bg-[var(--border)] rounded-none" />
+                      <div className="h-9 w-9 rounded-full bg-[var(--border)]" />
                     </div>
-                    <div className="h-4 w-3/4 bg-[#E5DFD5] rounded-none" />
+                    <div className="h-4 w-3/4 bg-[var(--border)] rounded-none" />
                     <div className="flex gap-2">
-                      <div className="h-5 w-16 bg-[#E5DFD5] rounded-none" />
-                      <div className="h-5 w-16 bg-[#E5DFD5] rounded-none" />
-                      <div className="h-5 w-20 bg-[#E5DFD5] rounded-none" />
+                      <div className="h-5 w-16 bg-[var(--border)] rounded-none" />
+                      <div className="h-5 w-16 bg-[var(--border)] rounded-none" />
+                      <div className="h-5 w-20 bg-[var(--border)] rounded-none" />
                     </div>
-                    <div className="h-3 w-full bg-[#E5DFD5] rounded-none" />
+                    <div className="h-3 w-full bg-[var(--border)] rounded-none" />
                   </div>
                 ))}
               </div>
@@ -393,13 +393,13 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                       onClick={() => setSelectedCandidateId(cand.id)}
                       className={`relative border p-4 cursor-pointer transition-all duration-150 ${
                         isSelected
-                          ? "border-[#221F1A] bg-[#FFFFFF] shadow-sm ring-1 ring-[#221F1A]"
-                          : "border-[#CEC4B5] bg-[#FAF7F2] hover:border-[#8E887D]"
+                          ? "border-[var(--foreground)] bg-[var(--card)] shadow-sm ring-1 ring-[var(--foreground)]"
+                          : "border-[var(--border-strong)] bg-[var(--background)] hover:border-[#8E887D]"
                       }`}
                     >
                       {/* Quiet Recommended Ribbon - Never size or border differences */}
                       {cand.is_recommended && (
-                        <div className="absolute -top-2.5 right-4 bg-[#FEF3C7] border border-[#D97706] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#92400E] shadow-none">
+                        <div className="absolute -top-2.5 right-4 bg-[#FEF3C7] border border-[var(--accent)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#92400E] shadow-none">
                           ★ Recommended
                         </div>
                       )}
@@ -418,7 +418,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                             >
                               {cand.candidate_type}
                             </span>
-                            <span className="text-[11px] font-bold text-[#221F1A]">
+                            <span className="text-[11px] font-bold text-[var(--foreground)]">
                               {cand.title}
                             </span>
                           </div>
@@ -426,8 +426,8 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                           {/* Numeric Badges Row */}
                           <div className="flex flex-wrap items-center gap-1.5 pt-1">
                             {/* Cost Pill */}
-                            <span className="inline-flex items-center gap-1 border border-[#E5DFD5] bg-[#FFFFFF] px-1.5 py-0.5 text-[10px] font-semibold text-[#4A453C]">
-                              <DollarSign className="h-2.5 w-2.5 text-[#6E685D]" />
+                            <span className="inline-flex items-center gap-1 border border-[var(--border)] bg-[var(--card)] px-1.5 py-0.5 text-[10px] font-semibold text-[#4A453C]">
+                              <DollarSign className="h-2.5 w-2.5 text-[var(--muted-foreground)]" />
                               {cand.cost_delta > 0
                                 ? `+$${cand.cost_delta.toFixed(2)}`
                                 : cand.cost_delta < 0
@@ -436,16 +436,16 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                             </span>
 
                             {/* Time Delta Pill */}
-                            <span className="inline-flex items-center gap-1 border border-[#E5DFD5] bg-[#FFFFFF] px-1.5 py-0.5 text-[10px] font-semibold text-[#4A453C]">
-                              <Clock className="h-2.5 w-2.5 text-[#6E685D]" />
+                            <span className="inline-flex items-center gap-1 border border-[var(--border)] bg-[var(--card)] px-1.5 py-0.5 text-[10px] font-semibold text-[#4A453C]">
+                              <Clock className="h-2.5 w-2.5 text-[var(--muted-foreground)]" />
                               {cand.time_delta_minutes > 0
                                 ? `+${cand.time_delta_minutes}m buffer`
                                 : `${cand.time_delta_minutes}m`}
                             </span>
 
                             {/* Itinerary Altered Pill */}
-                            <span className="inline-flex items-center gap-1 border border-[#E5DFD5] bg-[#FFFFFF] px-1.5 py-0.5 text-[10px] font-semibold text-[#4A453C]">
-                              <Percent className="h-2.5 w-2.5 text-[#6E685D]" />
+                            <span className="inline-flex items-center gap-1 border border-[var(--border)] bg-[var(--card)] px-1.5 py-0.5 text-[10px] font-semibold text-[#4A453C]">
+                              <Percent className="h-2.5 w-2.5 text-[var(--muted-foreground)]" />
                               {cand.itinerary_altered_percent.toFixed(0)}% altered
                             </span>
 
@@ -463,19 +463,19 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                       </div>
 
                       {/* One Sentence Human Rationale from Groq / Fallback */}
-                      <p className="mt-2 text-xs text-[#221F1A] leading-relaxed italic border-l-2 border-[#CEC4B5] pl-2.5">
+                      <p className="mt-2 text-xs text-[var(--foreground)] leading-relaxed italic border-l-2 border-[var(--border-strong)] pl-2.5">
                         &ldquo;{cand.human_explanation}&rdquo;
                       </p>
 
                       {/* Inline Expandable "See the Math" Section */}
-                      <div className="mt-3 border-t border-[#E5DFD5] pt-2">
+                      <div className="mt-3 border-t border-[var(--border)] pt-2">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             setExpandedMathId(isMathExpanded ? null : cand.id);
                           }}
-                          className="flex items-center gap-1 text-[11px] font-semibold text-[#6E685D] hover:text-[#221F1A] transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
                         >
                           {isMathExpanded ? (
                             <ChevronUp className="h-3 w-3" />
@@ -486,8 +486,8 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                         </button>
 
                         {isMathExpanded && (
-                          <div className="mt-2.5 border border-[#E5DFD5] bg-[#FFFFFF] p-2.5 text-[11px] space-y-2 text-[#4A453C]">
-                            <div className="font-mono text-[10px] text-[#6E685D] border-b border-[#E5DFD5] pb-1">
+                          <div className="mt-2.5 border border-[var(--border)] bg-[var(--card)] p-2.5 text-[11px] space-y-2 text-[#4A453C]">
+                            <div className="font-mono text-[10px] text-[var(--muted-foreground)] border-b border-[var(--border)] pb-1">
                               {cand.scoring_breakdown.formula_explanation}
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
@@ -508,7 +508,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                                 <span className="font-mono font-bold">{cand.scoring_breakdown.refund_score} pts</span>
                               </div>
                             </div>
-                            <div className="border-t border-[#E5DFD5] pt-1 flex justify-between font-bold text-xs text-[#221F1A]">
+                            <div className="border-t border-[var(--border)] pt-1 flex justify-between font-bold text-xs text-[var(--foreground)]">
                               <span>Deterministic Score Sum:</span>
                               <span className="font-mono">{cand.score} / 100</span>
                             </div>
@@ -530,8 +530,8 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
                           }}
                           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
                             cand.is_recommended
-                              ? "bg-[#221F1A] text-[#FAF7F2] hover:bg-[#38332B]"
-                              : "border border-[#221F1A] bg-[#FFFFFF] text-[#221F1A] hover:bg-[#F3ECE2]"
+                              ? "bg-[var(--foreground)] text-[var(--background)] hover:bg-[#38332B]"
+                              : "border border-[var(--foreground)] bg-[var(--card)] text-[var(--foreground)] hover:bg-[var(--muted)]"
                           }`}
                         >
                           <Zap className="h-3 w-3" />
@@ -550,20 +550,20 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
       {/* ========================================================================= */}
       {/* FOOTER ACTIONS                                                            */}
       {/* ========================================================================= */}
-      <div className="mt-6 border-t border-[#E5DFD5] pt-4 flex flex-col gap-2">
+      <div className="mt-6 border-t border-[var(--border)] pt-4 flex flex-col gap-2">
         {activeTab === "blast_radius" ? (
           <>
             {/* Step 2 Requirement: "Show recovery options" button right here at bottom of blast radius */}
             <button
               onClick={handleOpenRecoveryOptions}
-              className="flex items-center justify-center gap-2 border border-[#221F1A] bg-[#221F1A] px-4 py-2.5 text-xs font-medium text-[#FAF7F2] hover:bg-[#38332B] transition-colors"
+              className="flex items-center justify-center gap-2 border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-2.5 text-xs font-medium text-[var(--background)] hover:bg-[#38332B] transition-colors"
             >
-              <Sparkles className="h-3.5 w-3.5 text-[#D97706]" />
+              <Sparkles className="h-3.5 w-3.5 text-[var(--accent)]" />
               <span>Show Recovery Options</span>
             </button>
             <button
               onClick={() => onResolve(String(disruptionId))}
-              className="flex items-center justify-center gap-2 border border-[#CEC4B5] bg-[#FAF7F2] px-4 py-2 text-xs font-medium text-[#4A453C] hover:text-[#221F1A] hover:border-[#221F1A] transition-colors"
+              className="flex items-center justify-center gap-2 border border-[var(--border-strong)] bg-[var(--background)] px-4 py-2 text-xs font-medium text-[#4A453C] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Quick Reset Schedule</span>
@@ -575,7 +575,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
               <button
                 disabled={isApplying}
                 onClick={() => handleApplyClick(selectedCandidateId)}
-                className="flex items-center justify-center gap-2 border border-[#221F1A] bg-[#221F1A] px-4 py-2.5 text-xs font-medium text-[#FAF7F2] hover:bg-[#38332B] transition-colors"
+                className="flex items-center justify-center gap-2 border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-2.5 text-xs font-medium text-[var(--background)] hover:bg-[#38332B] transition-colors"
               >
                 <Check className="h-3.5 w-3.5 text-[#059669]" />
                 <span>
@@ -585,7 +585,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
             )}
             <button
               onClick={() => setActiveTab("blast_radius")}
-              className="flex items-center justify-center border border-[#CEC4B5] bg-[#FFFFFF] px-4 py-2 text-xs font-medium text-[#6E685D] hover:text-[#221F1A] hover:border-[#221F1A] transition-colors"
+              className="flex items-center justify-center border border-[var(--border-strong)] bg-[var(--card)] px-4 py-2 text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
             >
               Back to Blast Radius
             </button>

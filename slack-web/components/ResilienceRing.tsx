@@ -39,7 +39,7 @@ export const ResilienceRing: React.FC<ResilienceRingProps> = ({
     badgeText = "#991B1B";
     badgeBorder = "#FECACA";
   } else if (clampedScore < 80) {
-    strokeColor = "#D97706"; // Amber (Caution)
+    strokeColor = "var(--accent)"; // Amber (Caution)
     badgeBg = "#FFFBEB";
     badgeText = "#92400E";
     badgeBorder = "#FDE68A";
@@ -61,7 +61,7 @@ export const ResilienceRing: React.FC<ResilienceRingProps> = ({
             cx={config.dimension / 2}
             cy={config.dimension / 2}
             r={config.radius}
-            stroke="#E5DFD5"
+            stroke="var(--border)"
             strokeWidth={config.strokeWidth}
             fill="none"
           />

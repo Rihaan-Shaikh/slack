@@ -41,18 +41,18 @@ export const TripCreateModal: React.FC<TripCreateModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#221F1A]/40 p-4">
-      <div className="w-full max-w-md border border-[#CEC4B5] bg-[#FFFFFF] p-6">
-        <div className="flex items-center justify-between border-b border-[#E5DFD5] pb-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--foreground)]/40 p-4">
+      <div className="w-full max-w-md border border-[var(--border-strong)] bg-[var(--card)] p-6">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center bg-[#221F1A] text-[#FAF7F2]">
+            <div className="flex h-7 w-7 items-center justify-center bg-[var(--foreground)] text-[var(--background)]">
               <Compass className="h-4 w-4" />
             </div>
-            <span className="font-serif-heading text-lg font-bold text-[#221F1A]">
+            <span className="font-serif-heading text-lg font-bold text-[var(--foreground)]">
               Create New Trip
             </span>
           </div>
-          <button onClick={onClose} className="p-1 text-[#6E685D] hover:text-[#221F1A]">
+          <button onClick={onClose} className="p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -65,7 +65,7 @@ export const TripCreateModal: React.FC<TripCreateModalProps> = ({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
           <div>
-            <label className="block font-medium text-[#221F1A] mb-1">
+            <label className="block font-medium text-[var(--foreground)] mb-1">
               Trip Itinerary Name *
             </label>
             <input
@@ -73,7 +73,7 @@ export const TripCreateModal: React.FC<TripCreateModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. London & Paris Summer 2026"
-              className="w-full border border-[#CEC4B5] p-2 text-xs text-[#221F1A] focus:border-[#221F1A] focus:outline-none"
+              className="w-full border border-[var(--border-strong)] p-2 text-xs text-[var(--foreground)] focus:border-[var(--foreground)] focus:outline-none"
               required
               autoFocus
             />
@@ -82,18 +82,18 @@ export const TripCreateModal: React.FC<TripCreateModalProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-[#E5DFD5] pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="border border-[#CEC4B5] px-3.5 py-1.5 font-medium text-[#6E685D] hover:text-[#221F1A]"
+              className="border border-[var(--border-strong)] px-3.5 py-1.5 font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="border border-[#221F1A] bg-[#221F1A] px-4 py-1.5 font-medium text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-50"
+              className="border border-[var(--foreground)] bg-[var(--foreground)] px-4 py-1.5 font-medium text-[var(--background)] hover:bg-[#38332B] disabled:opacity-50"
             >
               {isSubmitting ? "Creating..." : "Create Trip"}
             </button>

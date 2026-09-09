@@ -41,27 +41,27 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
   const isStressDemo = currentTrip?.name.includes("Grand European");
 
   return (
-    <div className="border-b border-[#CEC4B5] bg-[#FFFFFF] transition-all">
+    <div className="border-b border-[var(--border-strong)] bg-[var(--card)] transition-all">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2">
         {/* Left: Demo Pitch Mode Pill & Step Indicator */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#FAF7F2]">
-            <Sparkles className="h-3.5 w-3.5 text-[#D97706]" />
+          <div className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--background)]">
+            <Sparkles className="h-3.5 w-3.5 text-[var(--accent)]" />
             <span>Judge Demo Pitch Mode</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-[#6E685D]">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
             <span className="font-medium">3-Click Pitch Arc:</span>
             <span
               className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                 !currentTrip || !isAlpineDemo
-                  ? "bg-[#F3ECE2] text-[#221F1A] ring-1 ring-[#221F1A]"
+                  ? "bg-[var(--muted)] text-[var(--foreground)] ring-1 ring-[var(--foreground)]"
                   : "text-[#8E887D] line-through"
               }`}
             >
               1. Load Demo
             </span>
-            <ArrowRight className="h-3 w-3 text-[#CEC4B5]" />
+            <ArrowRight className="h-3 w-3 text-[var(--border-strong)]" />
             <span
               className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                 isAlpineDemo && activeDisruptionsCount === 0
@@ -73,7 +73,7 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
             >
               2. Trigger LX 354
             </span>
-            <ArrowRight className="h-3 w-3 text-[#CEC4B5]" />
+            <ArrowRight className="h-3 w-3 text-[var(--border-strong)]" />
             <span
               className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                 activeDisruptionsCount > 0
@@ -92,7 +92,7 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
           <button
             onClick={onLoadDemoTrip}
             disabled={isLoading}
-            className="flex items-center gap-1.5 border border-[#221F1A] bg-[#221F1A] px-3 py-1 text-xs font-semibold text-[#FAF7F2] hover:bg-[#38332B] disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 border border-[var(--foreground)] bg-[var(--foreground)] px-3 py-1 text-xs font-semibold text-[var(--background)] hover:bg-[#38332B] disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
             title="Seed multi-city trip: 7 bookings, 1 tight layover (+15m), 1 overlapping pair"
           >
             <Sparkles className="h-3.5 w-3.5 text-[#FCD34D]" />
@@ -113,7 +113,7 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
           {/* Collapsible More Options: Stress Test & Live Weather */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FAF7F2] px-2 py-1 text-xs text-[#6E685D] hover:text-[#221F1A] transition-colors"
+            className="flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
             title="Show additional stress test and weather tools"
           >
             <span className="text-[11px] font-medium hidden md:inline">Tools</span>
@@ -128,9 +128,9 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
 
       {/* Expanded Tools Drawer (Stress Test & Live Open-Meteo Weather) */}
       {isCollapsed && (
-        <div className="border-t border-[#F3ECE2] bg-[#FAF7F2] px-6 py-2.5">
+        <div className="border-t border-[var(--muted)] bg-[var(--background)] px-6 py-2.5">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-[#6E685D]">
+            <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
               <Info className="h-3.5 w-3.5 text-[#8E887D]" />
               <span>
                 Stress-test graph layout or inject authentic Open-Meteo real-time airport telemetry:
@@ -142,7 +142,7 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
               <button
                 onClick={onLoadStressTrip}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2] hover:border-[#221F1A] disabled:opacity-50 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:border-[var(--foreground)] disabled:opacity-50 transition-colors cursor-pointer"
                 title="Seed 16 bookings across 5 days to stress-test the D3 measure-then-fit layout"
               >
                 <Layers className="h-3.5 w-3.5 text-[#2B5B84]" />
@@ -153,7 +153,7 @@ export const DemoControlBar: React.FC<DemoControlBarProps> = ({
               <button
                 onClick={onOpenLiveWeather}
                 disabled={isLoading || !currentTrip}
-                className="flex items-center gap-1.5 border border-[#CEC4B5] bg-[#FFFFFF] px-2.5 py-1 text-xs font-medium text-[#221F1A] hover:bg-[#F3ECE2] hover:border-[#221F1A] disabled:opacity-50 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1 text-xs font-medium text-[var(--foreground)] hover:bg-[var(--muted)] hover:border-[var(--foreground)] disabled:opacity-50 transition-colors cursor-pointer"
                 title="Fetch real-time weather from Open-Meteo REST API (Zurich, Geneva, London, Paris, Milan)"
               >
                 <CloudRain className="h-3.5 w-3.5 text-[#0284C7]" />
