@@ -1,26 +1,6 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useEffect, MutableRefObject, RefObject } from "react";
 import * as d3 from "d3";
-import { Maximize2, ZoomIn, ZoomOut, RotateCcw, ChevronDown, ChevronUp, MapPin, Clock, DollarSign } from "lucide-react";
-import { GraphEdge, GraphNode, NodeImpact, SuggestedDependency } from "@/lib/types";
-import { useZoom } from "@/hooks/useZoom";
-import { useRippleAnimation } from "@/hooks/useRippleAnimation";
-import { useD3Graph, getEdgeStyle } from "@/hooks/useD3Graph";
-
-interface GraphViewProps {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  selectedNodeId: string | null;
-  onSelectNode: (node: GraphNode) => void;
-  suggestedDependencies: SuggestedDependency[];
-  disruptedBookingId?: string | null;
-  ripplePath?: string[];
-  perNodeImpact?: NodeImpact[];
-  onFitToScreenRef?: (fn: () => void) => void;
-  isReverseRippling?: boolean;
-  reverseStepIndex?: number;
-  pulsingNodeId?: string | null;
-  showAtRiskOnly?: boolean;
-}
+import { GraphNode, NodeImpact } from "@/lib/types";
 
 interface D3Node extends d3.SimulationNodeDatum {
   id: string;
@@ -58,17 +38,15 @@ const TYPE_COLORS: Record<string, { fill: string; stroke: string; label: string;
   activity: { fill: "#F7EEF6", stroke: "#6D3A6D", label: "Activity", text: "#4D284D" },
 };
 
-// Strict & Defensive Edge Style Resolver (guarantees safe slack >30m never renders as violated)
 export function getEdgeStyle(status: "safe" | "tight" | "violated", slackMinutes?: number) {
-  // Defensive validation: if slackMinutes is known, let mathematical truth govern style
   const effectiveStatus: "safe" | "tight" | "violated" =
     slackMinutes !== undefined
       ? slackMinutes < 0
         ? "violated"
-        : slackMinutes <= 30
+      : slackMinutes <= 30
         ? "tight"
-        : "safe"
-      : status;
+      : "safe"
+    : status;
 
   if (effectiveStatus === "violated") {
     return {
@@ -103,273 +81,55 @@ export function getEdgeStyle(status: "safe" | "tight" | "violated", slackMinutes
   };
 }
 
-
-export const TYPE_COLORS: Record<string, { fill: string; stroke: string; label: string; text: string }> = {
-  flight: { fill: "#EBF3F9", stroke: "#2B5B84", label: "Flight", text: "#1E3E5B" },
-  hotel: { fill: "#FBF1E8", stroke: "#885434", label: "Hotel", text: "#633B22" },
-  transfer: { fill: "#EDF7F2", stroke: "#2D6A4F", label: "Transfer", text: "#1E4734" },
-  activity: { fill: "#F7EEF6", stroke: "#6D3A6D", label: "Activity", text: "#4D284D" },
-};
-
-export const GraphView: React.FC<GraphViewProps> = ({
+export function useD3Graph({
+  svgRef,
+  containerRef,
+  zoomBehaviorRef,
+  gRootRef,
+  nodePositionsRef,
+  containerDimensions,
   nodes,
-  edges,
+  effectiveEdges,
   selectedNodeId,
   onSelectNode,
   suggestedDependencies,
   disruptedBookingId,
-  ripplePath = [],
-  perNodeImpact = [],
-  onFitToScreenRef,
-  isReverseRippling = false,
-  reverseStepIndex = -1,
-  pulsingNodeId = null,
-  showAtRiskOnly = false,
-}) => {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const zoomBehaviorRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-  const gRootRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
-  const nodePositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
-
-  const [containerDimensions, setContainerDimensions] = useState<{ width: number; height: number }>({
-    width: 1200,
-    height: 620,
-  });
-
-  const [activeDayIndex, setActiveDayIndex] = useState<number | null>(null);
-  const [isLegendCollapsed, setIsLegendCollapsed] = useState(false);
-  const [hoveredNode, setHoveredNode] = useState<{
-    node: any;
-    screenX: number;
-    screenY: number;
-  } | null>(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        if (width > 0 && height > 0) {
-          setContainerDimensions({ width: Math.round(width), height: Math.round(height) });
-        }
-      }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const { revealedRippleIndex } = useRippleAnimation(disruptedBookingId, ripplePath);
-
-  const impactMap = useMemo(() => {
-    const map = new Map<string, NodeImpact>();
-    perNodeImpact.forEach((i) => map.set(i.booking_id, i));
-    return map;
-  }, [perNodeImpact]);
-
-  const effectiveEdges = useMemo(() => {
-    if (!showAtRiskOnly) return edges;
-    return edges.filter((e) => e.status === "tight" || e.status === "violated" || e.slack_minutes <= 30);
-  }, [edges, showAtRiskOnly]);
-
-  const atRiskTargetNodeIds = useMemo(() => {
-    const ids = new Set<string>();
-    edges.forEach((e) => {
-      if ((e.status === "tight" || e.status === "violated" || e.slack_minutes <= 30) && !disruptedBookingId) {
-        ids.add(e.to);
-      }
-    });
-    return ids;
-  }, [edges, disruptedBookingId]);
-
-  const dayBuckets = useMemo(() => {
-    if (nodes.length === 0) return [];
-    const sorted = [...nodes].sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-    const dayMap = new Map<string, { label: string; dateStr: string; startTimestamp: number; fullDate: string }>();
-
-    sorted.forEach((n) => {
-      const d = new Date(n.start_time);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-      if (!dayMap.has(key)) {
-        const midnight = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-        const label = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-        const fullDate = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-        dayMap.set(key, { label, dateStr: key, startTimestamp: midnight.getTime(), fullDate });
-      }
-    });
-    return Array.from(dayMap.values()).map((val, idx) => ({ ...val, dayNum: idx + 1 }));
-  }, [nodes]);
-
-  const suggestedNodeIds = useMemo(() => {
-    const set = new Set<string>();
-    suggestedDependencies.forEach((s) => {
-      set.add(s.from);
-      set.add(s.to);
-    });
-    return set;
-  }, [suggestedDependencies]);
-
-  const {
-    fitToContent,
-    handleZoomIn,
-    handleZoomOut,
-    handleJumpToDay,
-    handleResetView
-  } = useZoom(svgRef as any, zoomBehaviorRef, gRootRef, containerDimensions, nodes, nodePositionsRef, setActiveDayIndex);
-
-  useEffect(() => {
-    if (onFitToScreenRef) {
-      onFitToScreenRef(fitToContent);
-    }
-  }, [onFitToScreenRef, fitToContent]);
-
-  useD3Graph({
-    svgRef, containerRef, zoomBehaviorRef, gRootRef, nodePositionsRef,
-    containerDimensions, nodes, effectiveEdges, selectedNodeId, onSelectNode,
-    suggestedDependencies, disruptedBookingId, ripplePath, revealedRippleIndex,
-    impactMap, suggestedNodeIds, dayBuckets, fitToContent, pulsingNodeId,
-    atRiskTargetNodeIds, isReverseRippling, reverseStepIndex, setHoveredNode
-  });
-
-  return () => observer.disconnect();
-  }, []);
-
-  // Staggered timer to reveal ripple nodes sequentially in BFS order
-  useEffect(() => {
-    if (disruptedBookingId && ripplePath.length > 0) {
-      setRevealedRippleIndex(0);
-      let step = 0;
-      const interval = setInterval(() => {
-        step += 1;
-        if (step < ripplePath.length) {
-          setRevealedRippleIndex(step);
-        } else {
-          clearInterval(interval);
-        }
-      }, 280);
-
-      return () => clearInterval(interval);
-    } else {
-      setRevealedRippleIndex(-1);
-    }
-  }, [disruptedBookingId, ripplePath]);
-
-  // Index per_node_impact by booking_id
-  const impactMap = useMemo(() => {
-    const map = new Map<string, NodeImpact>();
-    perNodeImpact.forEach((i) => map.set(i.booking_id, i));
-    return map;
-  }, [perNodeImpact]);
-
-  // Phase 4: Filter edges if showAtRiskOnly is enabled
-  const effectiveEdges = useMemo(() => {
-    if (!showAtRiskOnly) return edges;
-    return edges.filter(
-      (e) => e.status === "tight" || e.status === "violated" || e.slack_minutes <= 30
-    );
-  }, [edges, showAtRiskOnly]);
-
-  // Phase 4: Identify at-risk target nodes for persistent amber beacon marker
-  const atRiskTargetNodeIds = useMemo(() => {
-    const ids = new Set<string>();
-    edges.forEach((e) => {
-      if ((e.status === "tight" || e.status === "violated" || e.slack_minutes <= 30) && !disruptedBookingId) {
-        ids.add(e.to);
-      }
-    });
-    return ids;
-  }, [edges, disruptedBookingId]);
-
-  // Compute distinct days for Day-Jump navigation & gridlines
-  const dayBuckets = useMemo(() => {
-    if (nodes.length === 0) return [];
-    const sorted = [...nodes].sort(
-      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-    );
-    const dayMap = new Map<
-      string,
-      { label: string; dateStr: string; startTimestamp: number; fullDate: string }
-    >();
-
-    sorted.forEach((n) => {
-      const d = new Date(n.start_time);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-        d.getDate()
-      ).padStart(2, "0")}`;
-
-      if (!dayMap.has(key)) {
-        // Midnight of this calendar day
-        const midnight = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-        const label = d.toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        });
-        const fullDate = d.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-        dayMap.set(key, {
-          label,
-          dateStr: key,
-          startTimestamp: midnight.getTime(),
-          fullDate,
-        });
-      }
-    });
-
-    return Array.from(dayMap.values()).map((val, idx) => ({
-      ...val,
-      dayNum: idx + 1,
-    }));
-  }, [nodes]);
-
-  // Set of node IDs involved in pending suggestions
-  const suggestedNodeIds = useMemo(() => {
-    const set = new Set<string>();
-    suggestedDependencies.forEach((s) => {
-      set.add(s.from);
-      set.add(s.to);
-    });
-    return set;
-  }, [suggestedDependencies]);
-
-  // Affine Fit-to-Screen function: calculates exact zoom transform to center graph in viewport
-  const fitToContent = useCallback(() => {
-    if (!svgRef.current || !gRootRef.current || !zoomBehaviorRef.current) return;
-    const gRoot = gRootRef.current;
-    const bbox = (gRoot.node() as SVGGElement | null)?.getBBox();
-
-    if (bbox && bbox.width > 0 && bbox.height > 0) {
-      const { width: W, height: H } = containerDimensions;
-      const padX = 70;
-      const padY = 60;
-
-      const scaleX = (W - 2 * padX) / bbox.width;
-      const scaleY = (H - 2 * padY) / bbox.height;
-      const scale = Math.max(0.18, Math.min(scaleX, scaleY, 1.15));
-
-      const tx = (W - bbox.width * scale) / 2 - bbox.x * scale;
-      const ty = (H - bbox.height * scale) / 2 - bbox.y * scale;
-
-      const targetTransform = d3.zoomIdentity.translate(tx, ty).scale(scale);
-
-      d3.select(svgRef.current)
-        .transition()
-        .duration(500)
-        .ease(d3.easeCubicOut)
-        .call(zoomBehaviorRef.current.transform, targetTransform);
-    }
-  }, [containerDimensions]);
-
-  // Expose fitToContent to parent if requested
-  useEffect(() => {
-    if (onFitToScreenRef) {
-      onFitToScreenRef(fitToContent);
-    }
-  }, [onFitToScreenRef, fitToContent]);
-
+  ripplePath,
+  revealedRippleIndex,
+  impactMap,
+  suggestedNodeIds,
+  dayBuckets,
+  fitToContent,
+  pulsingNodeId,
+  atRiskTargetNodeIds,
+  isReverseRippling,
+  reverseStepIndex,
+  setHoveredNode
+}: {
+  svgRef: RefObject<SVGSVGElement | null>;
+  containerRef: RefObject<HTMLDivElement | null>;
+  zoomBehaviorRef: MutableRefObject<d3.ZoomBehavior<SVGSVGElement, unknown> | null>;
+  gRootRef: MutableRefObject<d3.Selection<SVGGElement, unknown, null, undefined> | null>;
+  nodePositionsRef: MutableRefObject<Map<string, { x: number; y: number }>>;
+  containerDimensions: { width: number; height: number };
+  nodes: GraphNode[];
+  effectiveEdges: any[];
+  selectedNodeId: string | null;
+  onSelectNode: (node: GraphNode) => void;
+  suggestedDependencies: any[];
+  disruptedBookingId?: string | null;
+  ripplePath: string[];
+  revealedRippleIndex: number;
+  impactMap: Map<string, NodeImpact>;
+  suggestedNodeIds: Set<string>;
+  dayBuckets: any[];
+  fitToContent: () => void;
+  pulsingNodeId: string | null;
+  atRiskTargetNodeIds: Set<string>;
+  isReverseRippling: boolean;
+  reverseStepIndex: number;
+  setHoveredNode: (hover: any) => void;
+}) {
   // Primary D3 Render Effect
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || nodes.length === 0) return;
@@ -1096,236 +856,4 @@ export const GraphView: React.FC<GraphViewProps> = ({
     pulsingNodeId,
     atRiskTargetNodeIds,
   ]);
-
-  // Zoom Controls: Zoom In / Out / Reset
-  const handleZoomIn = () => {
-    if (!svgRef.current || !zoomBehaviorRef.current) return;
-    d3.select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 1.25);
-  };
-
-  const handleZoomOut = () => {
-    if (!svgRef.current || !zoomBehaviorRef.current) return;
-    d3.select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 0.8);
-  };
-
-  // Day-Jump navigation handler: centers view on selected day cluster
-  const handleJumpToDay = (timestamp: number, dayIdx: number) => {
-    setActiveDayIndex(dayIdx);
-    if (!svgRef.current || !zoomBehaviorRef.current) return;
-
-    const dayDateStr = new Date(timestamp).toISOString().slice(0, 10);
-    const dayNodes = nodes.filter((n) => n.start_time.startsWith(dayDateStr));
-    if (dayNodes.length === 0) return;
-
-    const dayPositions = dayNodes
-      .map((n) => nodePositionsRef.current.get(n.id)?.x)
-      .filter((x): x is number => x != null);
-    if (dayPositions.length === 0) return;
-
-    const avgX = dayPositions.reduce((a, b) => a + b, 0) / dayPositions.length;
-    const { width: W, height: H } = containerDimensions;
-    const centerY = Math.max(260, Math.round(H / 2) - 10);
-
-    const scale = 1.1;
-    const tx = W / 2 - avgX * scale;
-    const ty = H / 2 - centerY * scale;
-
-    const targetTransform = d3.zoomIdentity.translate(tx, ty).scale(scale);
-
-    d3.select(svgRef.current)
-      .transition()
-      .duration(550)
-      .ease(d3.easeCubicOut)
-      .call(zoomBehaviorRef.current.transform, targetTransform);
-  };
-
-  const handleResetView = () => {
-    setActiveDayIndex(null);
-    fitToContent();
-  };
-
-  return (
-    <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-[var(--background)] touch-none select-none">
-      {/* Top Controls Bar: Day Jumps & Camera Controls */}
-      <div className="absolute top-3 left-5 right-5 z-10 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        {/* Day-Jump Navigation */}
-        <div className="pointer-events-auto flex items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--card)] px-2.5 py-1.5 text-xs">
-          <span className="text-[11px] font-semibold text-[#8E887D] mr-1">Timeline:</span>
-          <button
-            onClick={handleResetView}
-            className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
-              activeDayIndex === null
-                ? "bg-[var(--foreground)] text-[var(--background)]"
-                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-            }`}
-          >
-            All Days
-          </button>
-          {dayBuckets.map((d, idx) => (
-            <button
-              key={d.dateStr}
-              onClick={() => handleJumpToDay(d.startTimestamp, idx)}
-              className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                activeDayIndex === idx
-                  ? "bg-[var(--foreground)] text-[var(--background)]"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-              }`}
-            >
-              Day {d.dayNum} ({d.fullDate})
-            </button>
-          ))}
-        </div>
-
-        {/* Zoom & Fit Control Cluster */}
-        <div className="pointer-events-auto flex items-center gap-1 border border-[var(--border-strong)] bg-[var(--card)] p-1 text-xs">
-          <button
-            onClick={handleZoomIn}
-            className="p-1.5 text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
-            title="Zoom in (+)"
-            aria-label="Zoom in"
-          >
-            <ZoomIn className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            className="p-1.5 text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
-            title="Zoom out (-)"
-            aria-label="Zoom out"
-          >
-            <ZoomOut className="h-3.5 w-3.5" />
-          </button>
-          <div className="h-4 w-px bg-[var(--border)] mx-0.5" />
-          <button
-            onClick={fitToContent}
-            className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
-            title="Fit whole graph to screen"
-          >
-            <Maximize2 className="h-3 w-3" />
-            <span>Fit</span>
-          </button>
-          <button
-            onClick={handleResetView}
-            className="p-1.5 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors"
-            title="Reset view"
-            aria-label="Reset view"
-          >
-            <RotateCcw className="h-3 w-3" />
-          </button>
-        </div>
-      </div>
-
-      {/* Responsive SVG Canvas */}
-      <svg
-        ref={svgRef}
-        className="h-full w-full select-none cursor-grab active:cursor-grabbing"
-        style={{ minHeight: "560px" }}
-      />
-
-      {/* Interactive Instant Hover Tooltip for untruncated label affordance (Requirement 7) */}
-      {hoveredNode && (
-        <div
-          className="pointer-events-none absolute z-30 border border-[var(--foreground)] bg-[var(--card)] p-3 text-xs shadow-none max-w-xs"
-          style={{
-            left: `${Math.min(containerDimensions.width - 240, hoveredNode.screenX + 16)}px`,
-            top: `${Math.max(20, hoveredNode.screenY - 70)}px`,
-          }}
-        >
-          <div className="flex items-center gap-2 mb-1.5">
-            <span
-              className="inline-block border px-1.5 py-0.2 text-[10px] font-bold uppercase tracking-wider"
-              style={{
-                backgroundColor: TYPE_COLORS[hoveredNode.node.type]?.fill,
-                borderColor: TYPE_COLORS[hoveredNode.node.type]?.stroke,
-                color: TYPE_COLORS[hoveredNode.node.type]?.text,
-              }}
-            >
-              {TYPE_COLORS[hoveredNode.node.type]?.label}
-            </span>
-            {hoveredNode.node.vendor && (
-              <span className="text-[11px] text-[#8E887D]">by {hoveredNode.node.vendor}</span>
-            )}
-          </div>
-          <div className="font-serif-heading text-sm font-bold text-[var(--foreground)]">
-            {hoveredNode.node.title}
-          </div>
-          <div className="mt-1.5 space-y-1 text-[var(--muted-foreground)] text-[11px]">
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-[#8E887D]" />
-              <span>
-                {hoveredNode.node.start_time.split("T")[1]?.substring(0, 5)} -{" "}
-                {hoveredNode.node.end_time.split("T")[1]?.substring(0, 5)}
-              </span>
-            </div>
-            {hoveredNode.node.location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3 w-3 text-[#8E887D]" />
-                <span className="truncate">{hoveredNode.node.location}</span>
-              </div>
-            )}
-            {hoveredNode.node.cost != null && (
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3 text-[#8E887D]" />
-                <span>${hoveredNode.node.cost.toFixed(2)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Unclipped, Collapsible Legend Panel in Bottom-Left (Requirement 5) */}
-      <div className="absolute bottom-4 left-5 z-20 border border-[var(--border-strong)] bg-[var(--card)] text-xs max-w-sm">
-        <div
-          onClick={() => setIsLegendCollapsed(!isLegendCollapsed)}
-          className="flex items-center justify-between gap-3 px-3 py-2 cursor-pointer select-none hover:bg-[var(--background)] transition-colors"
-        >
-          <div className="font-serif-heading font-semibold text-[var(--foreground)]">
-            Itinerary Graph Legend
-          </div>
-          <button className="text-[#8E887D] hover:text-[var(--foreground)]" aria-label="Toggle legend">
-            {isLegendCollapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          </button>
-        </div>
-
-        {!isLegendCollapsed && (
-          <div className="p-3 pt-1 border-t border-[var(--border)] flex flex-col gap-2 text-[var(--muted-foreground)]">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <div className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3 rounded-full border border-[#2B5B84] bg-[#EBF3F9]" />
-                <span>Flight</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3 rounded-full border border-[#885434] bg-[#FBF1E8]" />
-                <span>Hotel</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3 rounded-full border border-[#2D6A4F] bg-[#EDF7F2]" />
-                <span>Transfer</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3 rounded-full border border-[#6D3A6D] bg-[#F7EEF6]" />
-                <span>Activity</span>
-              </div>
-            </div>
-            <div className="border-t border-[var(--border)] pt-2 flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-1 w-5 bg-[#64748B]" />
-                <span className="text-[#334155] font-medium">Safe (&gt;30m slack)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-1.5 w-5 bg-[#C05621]" />
-                <span className="text-[#92400E] font-medium">Tight (0-30m buffer)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className="inline-block h-1.5 w-5 border-b-2 border-dashed border-[#B91C1C]"
-                  style={{ height: "0px" }}
-                />
-                <span className="text-[#991B1B] font-bold">Violated (&lt;0m, missed)</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+}
