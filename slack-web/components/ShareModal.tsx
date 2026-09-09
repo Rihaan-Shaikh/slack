@@ -93,7 +93,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       await fetchMembers();
       if (onMemberUpdated) onMemberUpdated();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to remove member");
+      setError(err instanceof Error ? err.message : "Failed to remove member");
     }
   };
 
@@ -126,6 +126,24 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {error}
           </div>
         )}
+
+        {/* Direct Trip URL */}
+        <div className="mt-4 flex items-center justify-between border border-[#E5DFD5] bg-[#FFFFFF] p-2.5 text-xs">
+          <div className="min-w-0 pr-2">
+            <div className="font-semibold text-[#221F1A]">Permanent Trip URL</div>
+            <div className="font-mono text-[11px] text-[#6E685D] truncate max-w-[280px]">
+              {typeof window !== "undefined" ? `${window.location.origin}/trips/${trip.id}` : `/trips/${trip.id}`}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleCopy(`${window.location.origin}/trips/${trip.id}`)}
+            className="flex items-center gap-1 border border-[#CEC4B5] bg-[#FAF7F2] px-2.5 py-1 text-[11px] font-semibold text-[#221F1A] hover:bg-[#F3ECE2] transition-colors shrink-0"
+          >
+            {copiedLink ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+            <span>{copiedLink ? "Copied" : "Copy Link"}</span>
+          </button>
+        </div>
 
         {/* Invite Form */}
         <form onSubmit={handleInvite} className="mt-5 space-y-4">

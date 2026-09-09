@@ -50,7 +50,7 @@ WMO_WEATHER_CODES = {
 }
 
 
-def seed_standard_demo_trip() -> Dict[str, Any]:
+def seed_standard_demo_trip(owner_id: Optional[UUID] = None, name_suffix: str = "") -> Dict[str, Any]:
     """
     Seed a complete, realistic multi-city Alpine Odyssey trip:
     - 7 bookings
@@ -62,9 +62,13 @@ def seed_standard_demo_trip() -> Dict[str, Any]:
     now = datetime.now(timezone.utc)
     base_date = (now + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
 
+    trip_name = "Alpine Odyssey (Zurich → Geneva → Chamonix)"
+    if name_suffix:
+        trip_name = f"Alpine Odyssey {name_suffix} (Zurich → Geneva → Chamonix)"
+
     trip_in = TripCreate(
-        name="Alpine Odyssey (Zurich → Geneva → Chamonix)",
-        owner_id=uuid4(),
+        name=trip_name,
+        owner_id=owner_id or uuid4(),
     )
     trip = db_create_trip(trip_in)
     trip_id = trip.id

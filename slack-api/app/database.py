@@ -25,6 +25,7 @@ from app.models import (
     Trip,
     TripCreate,
     TripMember,
+    User,
 )
 
 
@@ -149,6 +150,13 @@ def init_postgres_db():
                     action_type TEXT NOT NULL,
                     description TEXT NOT NULL,
                     metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                );
+                CREATE TABLE IF NOT EXISTS users (
+                    id UUID PRIMARY KEY,
+                    email TEXT NOT NULL UNIQUE,
+                    display_name TEXT NOT NULL,
+                    password_hash TEXT NOT NULL,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 );
             """)
@@ -421,6 +429,26 @@ def db_list_trips() -> List[Trip]:
         conn.execute("SELECT * FROM trips ORDER BY created_at DESC")
         rows = conn.cursor.fetchall()
         return [_row_to_trip(r) for r in rows]
+
+
+def db_update_trip_name(trip_id: UUID, name: str) -> Optional[Trip]:
+    with get_db_connection() as conn:
+        conn.execute("UPDATE trips SET name = %s WHERE id = %s RETURNING *", (name, str(trip_id)))
+        row = conn.cursor.fetchone()
+        return _row_to_trip(row) if row else None
+
+
+def db_delete_trip(trip_id: UUID) -> bool:
+    with get_db_connection() as conn:
+        conn.execute("DELETE FROM recovery_candidates WHERE disruption_id IN (SELECT id FROM disruptions WHERE trip_id = %s)", (str(trip_id),))
+        conn.execute("DELETE FROM applied_recoveries WHERE disruption_id IN (SELECT id FROM disruptions WHERE trip_id = %s)", (str(trip_id),))
+        conn.execute("DELETE FROM disruptions WHERE trip_id = %s", (str(trip_id),))
+        conn.execute("DELETE FROM dependencies WHERE trip_id = %s", (str(trip_id),))
+        conn.execute("DELETE FROM bookings WHERE trip_id = %s", (str(trip_id),))
+        conn.execute("DELETE FROM trip_members WHERE trip_id = %s", (str(trip_id),))
+        conn.execute("DELETE FROM activity_feed WHERE trip_id = %s", (str(trip_id),))
+        conn.execute("DELETE FROM trips WHERE id = %s", (str(trip_id),))
+        return True
 
 
 # --- 2. Booking Operations (Pure PostgreSQL) ---
@@ -1086,3 +1114,145 @@ def db_list_activity_feed(trip_id: UUID, limit: int = 50) -> List[ActivityFeedIt
         )
         rows = conn.cursor.fetchall()
         return [_row_to_activity_feed_item(r) for r in rows]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 1: Real Identity & Access — User DB functions
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _row_to_user(r: Any) -> User:
+    return User(
+        id=_to_uuid(r["id"]),
+        email=r["email"],
+        display_name=r["display_name"],
+        created_at=_to_datetime(r["created_at"]) or datetime.now(timezone.utc),
+    )
+
+
+def db_create_user(email: str, display_name: str, password_hash: str) -> User:
+    """Create a new user. Raises IntegrityError if email already exists."""
+    user_id = uuid4()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with get_db_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO users (id, email, display_name, password_hash, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id, email, display_name, created_at
+            """,
+            (str(user_id), email.strip().lower(), display_name.strip(), password_hash, now_iso),
+        )
+        row = conn.cursor.fetchone()
+    return _row_to_user(row)
+
+
+def db_get_user_by_email(email: str) -> Optional[User]:
+    """Fetch a user record by email. Returns None if not found."""
+    with get_db_connection() as conn:
+        conn.execute(
+            "SELECT id, email, display_name, created_at FROM users WHERE email = %s",
+            (email.strip().lower(),),
+        )
+        row = conn.cursor.fetchone()
+    if not row:
+        return None
+    return _row_to_user(row)
+
+
+def db_get_user_by_email_with_hash(email: str) -> Optional[tuple]:
+    """Returns (User, password_hash) tuple for login verification."""
+    with get_db_connection() as conn:
+        conn.execute(
+            "SELECT id, email, display_name, password_hash, created_at FROM users WHERE email = %s",
+            (email.strip().lower(),),
+        )
+        row = conn.cursor.fetchone()
+    if not row:
+        return None
+    user = User(
+        id=_to_uuid(row["id"]),
+        email=row["email"],
+        display_name=row["display_name"],
+        created_at=_to_datetime(row["created_at"]) or datetime.now(timezone.utc),
+    )
+    return (user, row["password_hash"])
+
+
+def db_get_user_by_id(user_id: UUID) -> Optional[User]:
+    """Fetch a user by UUID."""
+    with get_db_connection() as conn:
+        conn.execute(
+            "SELECT id, email, display_name, created_at FROM users WHERE id = %s",
+            (str(user_id),),
+        )
+        row = conn.cursor.fetchone()
+    if not row:
+        return None
+    return _row_to_user(row)
+
+
+def db_get_user_role_for_trip(trip_id: UUID, user_id: UUID) -> Optional[str]:
+    """
+    Look up this user's role in trip_members for the given trip.
+    Returns the role string ('owner', 'editor', 'viewer') or None if not a member.
+    """
+    with get_db_connection() as conn:
+        conn.execute(
+            """
+            SELECT role FROM trip_members
+            WHERE trip_id = %s AND user_id = %s
+            """,
+            (str(trip_id), str(user_id)),
+        )
+        row = conn.cursor.fetchone()
+    if not row:
+        return None
+    return row["role"]
+
+
+def db_list_trips_for_user(user_id: UUID) -> List[Trip]:
+    """
+    Return trips where user is the owner OR is an explicit trip_member.
+    Trips with owner_id = NULL (legacy/demo) are also included for backward compat.
+    """
+    with get_db_connection() as conn:
+        conn.execute(
+            """
+            SELECT DISTINCT t.id, t.name, t.owner_id, t.created_at
+            FROM trips t
+            LEFT JOIN trip_members tm ON tm.trip_id = t.id AND tm.user_id = %s
+            WHERE t.owner_id = %s
+               OR tm.user_id = %s
+               OR t.owner_id IS NULL
+            ORDER BY t.created_at DESC
+            """,
+            (str(user_id), str(user_id), str(user_id)),
+        )
+        rows = conn.cursor.fetchall()
+    return [_row_to_trip(r) for r in rows]
+
+
+def db_seed_demo_users(hash_fn) -> None:
+    """
+    Idempotently insert 3 demo accounts for the judge demo flow.
+    hash_fn is the bcrypt hash function (passed in to avoid circular import with auth.py).
+    Demo accounts:
+      owner@demo.com   / demo1234  → Aisha (Owner)
+      editor@demo.com  / demo1234  → Charlie (Editor)
+      viewer@demo.com  / demo1234  → Bob (Viewer)
+    """
+    demo_accounts = [
+        ("owner@demo.com",  "Aisha (Owner)",    "demo1234"),
+        ("editor@demo.com", "Charlie (Editor)", "demo1234"),
+        ("viewer@demo.com", "Bob (Viewer)",     "demo1234"),
+    ]
+    for email, display_name, password in demo_accounts:
+        existing = db_get_user_by_email(email)
+        if existing is None:
+            try:
+                db_create_user(email, display_name, hash_fn(password))
+                print(f"[auth] Seeded demo user: {email}")
+            except Exception as e:
+                print(f"[auth] Could not seed {email}: {e}")
+        else:
+            pass  # already exists — idempotent

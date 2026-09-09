@@ -36,6 +36,7 @@ interface ImpactSummaryPanelProps {
   disruptedBookingTitle: string;
   onResolve: (disruptionId: string) => Promise<void>;
   onApplyRecovery: (candidateId: string) => Promise<void>;
+  onError?: (message: string) => void;
 }
 
 // Circular Score Ring component
@@ -96,6 +97,7 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
   disruptedBookingTitle,
   onResolve,
   onApplyRecovery,
+  onError,
 }) => {
   // Panel mode: "blast_radius" or "recovery_options"
   const [activeTab, setActiveTab] = useState<"blast_radius" | "recovery_options">("blast_radius");
@@ -166,7 +168,8 @@ export const ImpactSummaryPanel: React.FC<ImpactSummaryPanelProps> = ({
       setIsApplying(true);
       await onApplyRecovery(candidateId);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to apply recovery option");
+      const msg = err instanceof Error ? err.message : "Failed to apply recovery option";
+      if (onError) onError(msg);
     } finally {
       setIsApplying(false);
     }

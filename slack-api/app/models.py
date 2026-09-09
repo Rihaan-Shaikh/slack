@@ -295,3 +295,27 @@ class ActivityFeedListResponse(BaseModel):
     trip_id: str
     activities: List[ActivityFeedItem]
 
+
+# Phase 1: Real Identity & Access — User models
+class User(BaseModel):
+    id: UUID
+    email: str
+    display_name: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    display_name: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class AuthResponse(BaseModel):
+    access_token: str
+    user_id: str
+    email: str
+    display_name: str
+

@@ -4,8 +4,16 @@ import json
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID, uuid4
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Query, status
 from fastapi.responses import StreamingResponse
+
+from app.auth import (
+    create_jwt,
+    get_current_user,
+    get_current_user_optional,
+    hash_password,
+    verify_password,
+)
 
 from app.demo import (
     seed_standard_demo_trip,
@@ -23,6 +31,7 @@ from app.database import (
     db_create_dependency,
     db_create_disruption,
     db_create_trip,
+    db_create_user,
     db_delete_booking,
     db_delete_dependency,
     db_get_booking,
@@ -34,17 +43,22 @@ from app.database import (
     db_get_recovery_candidates_by_disruption,
     db_get_trip,
     db_get_trip_member,
+    db_get_user_by_email_with_hash,
+    db_get_user_role_for_trip,
     db_list_active_disruptions,
     db_list_activity_feed,
     db_list_bookings,
     db_list_dependencies,
     db_list_trip_members,
     db_list_trips,
+    db_list_trips_for_user,
     db_remove_trip_member,
     db_resolve_disruption,
     db_save_recovery_candidates,
     db_update_booking,
     db_update_dependency,
+    db_update_trip_name,
+    db_delete_trip,
 )
 from app.events import event_bus
 from app.graph import build_trip_graph
@@ -54,6 +68,7 @@ from app.models import (
     AcceptInviteResponse,
     ActivityFeedItem,
     ActivityFeedListResponse,
+    AuthResponse,
     Booking,
     BookingCreate,
     BookingUpdate,
@@ -80,6 +95,8 @@ from app.models import (
     TripMemberInviteResponse,
     TripPresenceResponse,
     TripResilienceResponse,
+    UserCreate,
+    UserLogin,
 )
 from app.ripple import compute_effective_bookings, compute_ripple_impact
 from app.recovery import generate_raw_recovery_candidates, enrich_with_groq_or_fallback
@@ -87,38 +104,119 @@ from app.recovery import generate_raw_recovery_candidates, enrich_with_groq_or_f
 router = APIRouter()
 
 
-# --- Phase 5 Authorization & Activity Logging Helpers ---
+# ─── Phase 1: Auth routes ─────────────────────────────────────────────────────
 
-def get_caller_identity(request: Request) -> Tuple[str, Optional[str], Optional[str]]:
-    """Extract (actor_name, actor_email, declared_role) from request headers or query defaults."""
-    actor_name = request.headers.get("X-User-Name") or "Traveler"
-    actor_email = request.headers.get("X-User-Email") or None
-    declared_role = request.headers.get("X-User-Role") or None
-    return actor_name, actor_email, declared_role
-
-
-def verify_trip_mutation_permission(trip_id: UUID, request: Request):
-    """
-    Enforce that viewers cannot mutate trip data (server-side authorization enforcement).
-    Checks:
-    1. If explicit 'X-User-Role' header is 'viewer' -> raise 403 Forbidden.
-    2. If 'X-User-Email' is provided, look up member in trip_members.
-       If member exists and role is 'viewer' -> raise 403 Forbidden.
-    """
-    actor_name, actor_email, declared_role = get_caller_identity(request)
-    if declared_role and declared_role.lower() == "viewer":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Forbidden: Viewer role has read-only access and cannot modify trips, bookings, dependencies, disruptions, or recoveries.",
+@router.post("/auth/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+def signup(user_in: UserCreate):
+    """Register a new account. Returns a JWT on success."""
+    import psycopg2
+    # Reject empty fields
+    if not user_in.email.strip() or not user_in.password.strip() or not user_in.display_name.strip():
+        raise HTTPException(status_code=400, detail="Email, password, and display name are required.")
+    if len(user_in.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+    try:
+        user = db_create_user(
+            email=user_in.email,
+            display_name=user_in.display_name,
+            password_hash=hash_password(user_in.password),
         )
+    except psycopg2.errors.UniqueViolation:
+        raise HTTPException(status_code=409, detail="An account with this email already exists.")
+    except Exception as e:
+        if "unique" in str(e).lower() or "duplicate" in str(e).lower():
+            raise HTTPException(status_code=409, detail="An account with this email already exists.")
+        raise HTTPException(status_code=500, detail=f"Could not create account: {e}")
 
-    if actor_email:
-        role = db_get_member_role(trip_id, actor_email)
-        if role and role.lower() == "viewer":
+    token = create_jwt(str(user.id), user.email, user.display_name)
+    return AuthResponse(
+        access_token=token,
+        user_id=str(user.id),
+        email=user.email,
+        display_name=user.display_name,
+    )
+
+
+@router.post("/auth/login", response_model=AuthResponse)
+def login(user_in: UserLogin):
+    """Authenticate with email + password. Returns a JWT on success."""
+    result = db_get_user_by_email_with_hash(user_in.email)
+    if not result:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    user, password_hash = result
+    if not verify_password(user_in.password, password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    token = create_jwt(str(user.id), user.email, user.display_name)
+    return AuthResponse(
+        access_token=token,
+        user_id=str(user.id),
+        email=user.email,
+        display_name=user.display_name,
+    )
+
+
+@router.get("/auth/me")
+def get_me(current_user: dict = Depends(get_current_user)):
+    """Return the currently authenticated user's identity from the JWT."""
+    return {
+        "user_id": current_user["user_id"],
+        "email": current_user["email"],
+        "display_name": current_user["display_name"],
+    }
+
+
+@router.post("/auth/logout")
+def logout():
+    """Client-side logout: instruct frontend to clear the token from localStorage."""
+    return {"message": "Logged out successfully. Clear your access_token from localStorage."}
+
+
+# ─── Authorization & Activity Logging Helpers ─────────────────────────────────
+
+def verify_trip_mutation_permission(trip_id: UUID, current_user: dict):
+    """
+    Phase 1: JWT-enforced authorization.
+    Reads the real user_id from the verified JWT, NOT from any client-controlled header.
+    A viewer sending 'X-User-Role: owner' header changes NOTHING — that header is ignored.
+
+    Access rules:
+      - Trip owner (trips.owner_id == user.id): always allowed
+      - trip_members with role 'owner' or 'editor': allowed
+      - trip_members with role 'viewer': 403 Forbidden
+      - Not a member at all: 403 Forbidden (unless trip has no owner — legacy data)
+    """
+    user_id = UUID(current_user["user_id"])
+    trip = db_get_trip(trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    # Owner of the trip always has full access
+    if trip.owner_id and str(trip.owner_id) == str(user_id):
+        return
+
+    # Check trip_members role
+    role = db_get_user_role_for_trip(trip_id, user_id)
+
+    # Legacy trips (owner_id = NULL): allow anyone logged in to mutate (backward compat)
+    if trip.owner_id is None:
+        if role == "viewer":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Forbidden: Viewer role has read-only access and cannot modify trips, bookings, dependencies, disruptions, or recoveries.",
+                detail="Forbidden: Viewer role has read-only access.",
             )
+        return  # NULL-owner trips are open to any authenticated user
+
+    # For owned trips: must be an explicit member with editor/owner role
+    if role is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: You are not a member of this trip.",
+        )
+    if role == "viewer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Viewer role has read-only access.",
+        )
 
 
 def log_activity_and_broadcast(
@@ -144,14 +242,19 @@ def log_activity_and_broadcast(
     return item
 
 
-# 1. Trips endpoints
+# ─── 1. Trips endpoints ───────────────────────────────────────────────────────
+
 @router.post("/trips", response_model=Trip, status_code=status.HTTP_201_CREATED)
-def create_trip(trip_in: TripCreate):
+def create_trip(trip_in: TripCreate, current_user: dict = Depends(get_current_user)):
+    """Create a trip owned by the authenticated user."""
+    trip_in.owner_id = UUID(current_user["user_id"])
     return db_create_trip(trip_in)
 
+
 @router.get("/trips", response_model=List[Trip])
-def list_trips():
-    return db_list_trips()
+def list_trips(current_user: dict = Depends(get_current_user)):
+    """List trips the authenticated user owns or is a member of."""
+    return db_list_trips_for_user(UUID(current_user["user_id"]))
 
 @router.get("/trips/{trip_id}", response_model=Trip)
 def get_trip(trip_id: UUID):
@@ -160,10 +263,37 @@ def get_trip(trip_id: UUID):
         raise HTTPException(status_code=404, detail="Trip not found")
     return trip
 
+
+class TripUpdateInput(BaseModel):
+    name: str
+
+
+@router.patch("/trips/{trip_id}", response_model=Trip)
+def update_trip(trip_id: UUID, trip_in: TripUpdateInput, current_user: dict = Depends(get_current_user)):
+    """Update trip details (e.g. name). Must have mutation permissions."""
+    verify_trip_mutation_permission(trip_id, current_user)
+    updated = db_update_trip_name(trip_id, trip_in.name)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    return updated
+
+
+@router.delete("/trips/{trip_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_trip(trip_id: UUID, current_user: dict = Depends(get_current_user)):
+    """Delete a trip. Only the trip owner can delete it."""
+    trip = db_get_trip(trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    if trip.owner_id and str(trip.owner_id) != current_user["user_id"]:
+        raise HTTPException(status_code=403, detail="Only the trip owner can delete this trip")
+    db_delete_trip(trip_id)
+    return None
+
+
 # 2. Add booking to trip with auto suggestion
 @router.post("/trips/{trip_id}/bookings", response_model=BookingWithSuggestions, status_code=status.HTTP_201_CREATED)
-def add_booking(trip_id: UUID, booking_in: BookingCreate, request: Request):
-    verify_trip_mutation_permission(trip_id, request)
+def add_booking(trip_id: UUID, booking_in: BookingCreate, current_user: dict = Depends(get_current_user)):
+    verify_trip_mutation_permission(trip_id, current_user)
 
     trip = db_get_trip(trip_id)
     if not trip:
@@ -174,7 +304,8 @@ def add_booking(trip_id: UUID, booking_in: BookingCreate, request: Request):
 
     booking = db_create_booking(trip_id, booking_in)
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         trip_id,
         actor_name,
@@ -203,18 +334,19 @@ def add_booking(trip_id: UUID, booking_in: BookingCreate, request: Request):
 
 # 3. Edit booking
 @router.put("/bookings/{booking_id}", response_model=Booking)
-def update_booking(booking_id: UUID, booking_update: BookingUpdate, request: Request):
+def update_booking(booking_id: UUID, booking_update: BookingUpdate, current_user: dict = Depends(get_current_user)):
     existing = db_get_booking(booking_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    verify_trip_mutation_permission(existing.trip_id, request)
+    verify_trip_mutation_permission(existing.trip_id, current_user)
 
     updated = db_update_booking(booking_id, booking_update)
     if not updated:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         updated.trip_id,
         actor_name,
@@ -233,19 +365,20 @@ def update_booking(booking_id: UUID, booking_update: BookingUpdate, request: Req
 
 # 4. Delete booking (cascade delete dependencies)
 @router.delete("/bookings/{booking_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_booking(booking_id: UUID, request: Request):
+def delete_booking(booking_id: UUID, current_user: dict = Depends(get_current_user)):
     booking = db_get_booking(booking_id)
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    verify_trip_mutation_permission(booking.trip_id, request)
+    verify_trip_mutation_permission(booking.trip_id, current_user)
 
     trip_id = booking.trip_id
     success = db_delete_booking(booking_id)
     if not success:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         trip_id,
         actor_name,
@@ -264,8 +397,8 @@ def delete_booking(booking_id: UUID, request: Request):
 
 # 5. Create dependency edge
 @router.post("/trips/{trip_id}/dependencies", response_model=Dependency, status_code=status.HTTP_201_CREATED)
-def create_dependency(trip_id: UUID, dep_in: DependencyCreate, request: Request):
-    verify_trip_mutation_permission(trip_id, request)
+def create_dependency(trip_id: UUID, dep_in: DependencyCreate, current_user: dict = Depends(get_current_user)):
+    verify_trip_mutation_permission(trip_id, current_user)
 
     trip = db_get_trip(trip_id)
     if not trip:
@@ -281,7 +414,8 @@ def create_dependency(trip_id: UUID, dep_in: DependencyCreate, request: Request)
 
     dep = db_create_dependency(trip_id, dep_in)
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         trip_id,
         actor_name,
@@ -300,12 +434,12 @@ def create_dependency(trip_id: UUID, dep_in: DependencyCreate, request: Request)
 
 # 6. Edit and delete dependency
 @router.put("/dependencies/{dependency_id}", response_model=Dependency)
-def update_dependency(dependency_id: UUID, dep_update: DependencyUpdate, request: Request):
+def update_dependency(dependency_id: UUID, dep_update: DependencyUpdate, current_user: dict = Depends(get_current_user)):
     dep = db_get_dependency(dependency_id)
     if not dep:
         raise HTTPException(status_code=404, detail="Dependency not found")
 
-    verify_trip_mutation_permission(dep.trip_id, request)
+    verify_trip_mutation_permission(dep.trip_id, current_user)
 
     trip_id = dep.trip_id
     updated = db_update_dependency(dependency_id, dep_update)
@@ -320,19 +454,20 @@ def update_dependency(dependency_id: UUID, dep_update: DependencyUpdate, request
     return updated
 
 @router.delete("/dependencies/{dependency_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_dependency(dependency_id: UUID, request: Request):
+def delete_dependency(dependency_id: UUID, current_user: dict = Depends(get_current_user)):
     dep = db_get_dependency(dependency_id)
     if not dep:
         raise HTTPException(status_code=404, detail="Dependency not found")
 
-    verify_trip_mutation_permission(dep.trip_id, request)
+    verify_trip_mutation_permission(dep.trip_id, current_user)
 
     trip_id = dep.trip_id
     success = db_delete_dependency(dependency_id)
     if not success:
         raise HTTPException(status_code=404, detail="Dependency not found")
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         trip_id,
         actor_name,
@@ -399,8 +534,8 @@ def get_trip_suggestions(trip_id: UUID):
 
 # 9. Ingest disruption & compute BFS ripple impact
 @router.post("/trips/{trip_id}/disruptions", response_model=RippleResponse, status_code=status.HTTP_201_CREATED)
-def trigger_disruption(trip_id: UUID, disruption_in: DisruptionCreate, request: Request):
-    verify_trip_mutation_permission(trip_id, request)
+def trigger_disruption(trip_id: UUID, disruption_in: DisruptionCreate, current_user: dict = Depends(get_current_user)):
+    verify_trip_mutation_permission(trip_id, current_user)
 
     trip = db_get_trip(trip_id)
     if not trip:
@@ -413,7 +548,8 @@ def trigger_disruption(trip_id: UUID, disruption_in: DisruptionCreate, request: 
     # a. Insert disruption row
     disruption = db_create_disruption(trip_id, disruption_in)
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     delay_str = f" (+{disruption.delay_minutes}m)" if disruption.delay_minutes else ""
     log_activity_and_broadcast(
         trip_id,
@@ -466,16 +602,17 @@ def list_active_disruptions(trip_id: UUID):
 
 # 11. Resolve a disruption and recompute graph
 @router.post("/disruptions/{disruption_id}/resolve", response_model=DisruptionResolveResponse)
-def resolve_disruption(disruption_id: UUID, request: Request):
+def resolve_disruption(disruption_id: UUID, current_user: dict = Depends(get_current_user)):
     disruption = db_get_disruption(disruption_id)
     if not disruption:
         raise HTTPException(status_code=404, detail="Disruption not found")
 
-    verify_trip_mutation_permission(disruption.trip_id, request)
+    verify_trip_mutation_permission(disruption.trip_id, current_user)
 
     db_resolve_disruption(disruption_id)
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         disruption.trip_id,
         actor_name,
@@ -597,12 +734,12 @@ def get_recovery_options(trip_id: UUID, disruption_id: UUID):
     "/recovery-options/{candidate_id}/apply",
     response_model=RecoveryApplyResponse,
 )
-def apply_recovery_option(candidate_id: UUID, request: Request):
+def apply_recovery_option(candidate_id: UUID, current_user: dict = Depends(get_current_user)):
     candidate = db_get_recovery_candidate(candidate_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Recovery candidate not found")
 
-    verify_trip_mutation_permission(candidate.trip_id, request)
+    verify_trip_mutation_permission(candidate.trip_id, current_user)
 
     try:
         candidate, new_state = db_apply_recovery(candidate_id)
@@ -634,7 +771,8 @@ def apply_recovery_option(candidate_id: UUID, request: Request):
     else:
         confirmation = f"{candidate.title} applied{slack_info}."
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         candidate.trip_id,
         actor_name,
@@ -824,8 +962,8 @@ def get_trip_presence(trip_id: UUID):
     response_model=TripMemberInviteResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def invite_trip_member(trip_id: UUID, invite_in: TripMemberInviteRequest, request: Request):
-    verify_trip_mutation_permission(trip_id, request)
+def invite_trip_member(trip_id: UUID, invite_in: TripMemberInviteRequest, current_user: dict = Depends(get_current_user)):
+    verify_trip_mutation_permission(trip_id, current_user)
 
     trip = db_get_trip(trip_id)
     if not trip:
@@ -840,9 +978,10 @@ def invite_trip_member(trip_id: UUID, invite_in: TripMemberInviteRequest, reques
         invite_token=invite_token,
     )
 
-    invite_link = f"http://localhost:3000/?trip={trip_id}&invite={invite_token}"
+    invite_link = f"http://localhost:3000/trips/{trip_id}?invite={invite_token}"
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         trip_id,
         actor_name,
@@ -877,8 +1016,8 @@ def list_trip_members(trip_id: UUID):
 
 # 19. Remove a collaborator from a trip
 @router.delete("/trips/{trip_id}/members/{member_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_trip_member(trip_id: UUID, member_id: UUID, request: Request):
-    verify_trip_mutation_permission(trip_id, request)
+def remove_trip_member(trip_id: UUID, member_id: UUID, current_user: dict = Depends(get_current_user)):
+    verify_trip_mutation_permission(trip_id, current_user)
 
     member = db_get_trip_member(trip_id, member_id)
     if not member:
@@ -890,7 +1029,8 @@ def remove_trip_member(trip_id: UUID, member_id: UUID, request: Request):
     if not deleted:
         raise HTTPException(status_code=404, detail="Member could not be removed")
 
-    actor_name, actor_email, _ = get_caller_identity(request)
+    actor_name = current_user["display_name"]
+    actor_email = current_user["email"]
     log_activity_and_broadcast(
         trip_id,
         actor_name,
@@ -985,12 +1125,41 @@ class LiveWeatherDisruptionRequest(BaseModel):
 
 
 @router.post("/demo/seed")
-def seed_demo_endpoint():
+def seed_demo_endpoint(
+    reuse: bool = Query(True, description="Reuse existing Alpine Odyssey demo trip if already owned by user"),
+    current_user: Optional[dict] = Depends(get_current_user_optional),
+):
     """
     Seed a complete, realistic multi-city Alpine Odyssey trip:
     7 bookings, 1 tight connection (+15m slack), 1 overlapping pair, and 5 dependencies.
+    If reuse is True and the current user already owns an Alpine Odyssey trip, reuses it.
+    If a new trip is created, sequences it ("Alpine Odyssey #2", etc.) to prevent duplicate cards.
     """
-    seed_data = seed_standard_demo_trip()
+    owner_id = UUID(current_user["user_id"]) if current_user else None
+    if owner_id:
+        existing_trips = db_list_trips_for_user(owner_id)
+        alpine_trips = [t for t in existing_trips if "Alpine Odyssey" in t.name]
+        if reuse and alpine_trips:
+            # Reuse existing trip
+            trip = alpine_trips[0]
+            bookings = db_list_bookings(trip.id)
+            dependencies = db_list_dependencies(trip.id)
+            resilience = get_trip_resilience(trip.id)
+            return {
+                "trip": trip,
+                "bookings": bookings,
+                "dependencies": dependencies,
+                "resilience": resilience,
+                "sample_disruption": None,
+                "tight_booking_id": None,
+                "overlapping_pair": None,
+            }
+
+        suffix = f"#{len(alpine_trips) + 1}" if alpine_trips else ""
+        seed_data = seed_standard_demo_trip(owner_id=owner_id, name_suffix=suffix)
+    else:
+        seed_data = seed_standard_demo_trip()
+
     trip = seed_data["trip"]
     resilience = get_trip_resilience(trip.id)
     return {
@@ -998,9 +1167,9 @@ def seed_demo_endpoint():
         "bookings": seed_data["bookings"],
         "dependencies": seed_data["dependencies"],
         "resilience": resilience,
-        "sample_disruption": seed_data["sample_disruption"],
-        "tight_booking_id": seed_data["tight_booking_id"],
-        "overlapping_pair": seed_data["overlapping_pair"],
+        "sample_disruption": seed_data.get("sample_disruption"),
+        "tight_booking_id": seed_data.get("tight_booking_id"),
+        "overlapping_pair": seed_data.get("overlapping_pair"),
     }
 
 
@@ -1013,12 +1182,12 @@ def seed_stress_endpoint():
 
 
 @router.post("/demo/sample-disruption")
-def trigger_sample_disruption_endpoint(req: SampleDisruptionRequest, request: Request):
+def trigger_sample_disruption_endpoint(req: SampleDisruptionRequest, current_user: dict = Depends(get_current_user)):
     """
     1-click trigger for a guided disruption on the demo trip.
     Pre-fills a 60m delay on Flight LX 354, breaking the shuttle connection and dropping resilience.
     """
-    verify_trip_mutation_permission(req.trip_id, request)
+    verify_trip_mutation_permission(req.trip_id, current_user)
     bookings = db_list_bookings(req.trip_id)
     if not bookings:
         raise HTTPException(status_code=404, detail="No bookings found in trip")
@@ -1033,7 +1202,7 @@ def trigger_sample_disruption_endpoint(req: SampleDisruptionRequest, request: Re
         delay_minutes=req.delay_minutes,
         description=desc,
     )
-    return trigger_disruption(req.trip_id, disruption_in, request)
+    return trigger_disruption(req.trip_id, disruption_in, current_user)
 
 
 @router.get("/weather/airports")
@@ -1050,12 +1219,12 @@ async def get_airport_weather_endpoint():
 
 @router.post("/trips/{trip_id}/disruptions/live-weather")
 async def trigger_live_weather_disruption_endpoint(
-    trip_id: UUID, req: LiveWeatherDisruptionRequest, request: Request
+    trip_id: UUID, req: LiveWeatherDisruptionRequest, current_user: dict = Depends(get_current_user)
 ):
     """
     Query real-time weather from Open-Meteo and trigger an authentic live weather disruption.
     """
-    verify_trip_mutation_permission(trip_id, request)
+    verify_trip_mutation_permission(trip_id, current_user)
     weather_info = await fetch_live_airport_weather(req.airport_code)
 
     bookings = db_list_bookings(trip_id)
@@ -1082,7 +1251,4 @@ async def trigger_live_weather_disruption_endpoint(
         delay_minutes=delay_mins,
         description=desc,
     )
-    return trigger_disruption(trip_id, disruption_in, request)
-
-
-
+    return trigger_disruption(trip_id, disruption_in, current_user)

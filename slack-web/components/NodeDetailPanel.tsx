@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { X, Edit, Trash2, Clock, MapPin, DollarSign, ShieldAlert, Plus, ArrowRight } from "lucide-react";
-import { GraphEdge, GraphNode } from "@/lib/types";
+import { X, Edit, Trash2, MapPin, Plus, ArrowRight, Sparkles, Check } from "lucide-react";
+import { GraphEdge, GraphNode, SuggestedDependency } from "@/lib/types";
 
 interface NodeDetailPanelProps {
   node: GraphNode | null;
@@ -13,6 +13,9 @@ interface NodeDetailPanelProps {
   onDelete: (nodeId: string) => void;
   onAddDependencyFrom: (fromNodeId: string) => void;
   onDeleteDependency: (edgeId: string) => void;
+  suggestedDependencies?: SuggestedDependency[];
+  onAcceptSuggestion?: (suggestion: SuggestedDependency) => void;
+  onRejectSuggestion?: (suggestion: SuggestedDependency) => void;
 }
 
 const TYPE_BADGES: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -73,12 +76,18 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
   onDelete,
   onAddDependencyFrom,
   onDeleteDependency,
+  suggestedDependencies = [],
+  onAcceptSuggestion,
+  onRejectSuggestion,
 }) => {
   if (!node) return null;
 
   const typeBadge = TYPE_BADGES[node.type] || TYPE_BADGES.activity;
   const incomingEdges = edges.filter((e) => e.to === node.id);
   const outgoingEdges = edges.filter((e) => e.from === node.id);
+  const relevantSuggestions = (suggestedDependencies || []).filter(
+    (s) => s.from === node.id || s.to === node.id
+  );
 
   const formatFullDate = (isoStr: string) => {
     try {
@@ -243,6 +252,55 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
               Add Connection
             </button>
           </div>
+ 
+          {/* Inline Suggested Dependencies */}
+          {relevantSuggestions.length > 0 && (
+            <div className="mb-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B45309]">
+                <Sparkles className="h-3.5 w-3.5 text-[#D97706]" />
+                <span>Suggested Connection</span>
+              </div>
+              {relevantSuggestions.map((sugg, idx) => {
+                const otherId = sugg.from === node.id ? sugg.to : sugg.from;
+                const otherNode = allNodes.find((n) => n.id === otherId);
+                const isOutgoing = sugg.from === node.id;
+                return (
+                  <div
+                    key={idx}
+                    className="border border-[#F59E0B] bg-[#FFFBEB] p-2.5 text-xs text-[#92400E] space-y-1.5"
+                  >
+                    <div className="font-semibold text-[#78350F]">
+                      {isOutgoing
+                        ? `Connect to → ${otherNode?.title || "Booking"}`
+                        : `Connect from ← ${otherNode?.title || "Booking"}`}
+                    </div>
+                    <div className="text-[11px] text-[#B45309] leading-tight">
+                      {sugg.reason} (Rec. buffer: +{sugg.suggested_min_buffer_minutes}m)
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      {onAcceptSuggestion && (
+                        <button
+                          onClick={() => onAcceptSuggestion(sugg)}
+                          className="flex items-center gap-1 border border-[#D97706] bg-[#D97706] text-[#FFFFFF] px-2 py-0.5 text-[10px] font-bold hover:bg-[#B45309] transition-colors"
+                        >
+                          <Check className="h-3 w-3" />
+                          <span>Accept (+{sugg.suggested_min_buffer_minutes}m)</span>
+                        </button>
+                      )}
+                      {onRejectSuggestion && (
+                        <button
+                          onClick={() => onRejectSuggestion(sugg)}
+                          className="border border-[#CEC4B5] bg-[#FFFFFF] px-2 py-0.5 text-[10px] text-[#6E685D] hover:bg-[#FAF7F2] transition-colors"
+                        >
+                          Dismiss
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Upstream & Downstream list */}
           <div className="space-y-2 text-xs">

@@ -41,11 +41,12 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
   const [selectedAirportCode, setSelectedAirportCode] = useState<string>("ZRH");
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && disruptionType === "weather" && airportWeatherList.length === 0) {
-      loadWeather();
-    }
-  }, [isOpen, disruptionType, airportWeatherList.length]);
+  const applyWeatherDelay = (w: AirportWeather) => {
+    setDelayMinutes(w.suggested_delay_minutes);
+    setDescription(
+      `Live Weather Disruption (${w.airport_name}): ${w.weather_description}, ${w.temperature_c}°C, wind ${w.wind_speed_kmh} km/h (gusts ${w.wind_gusts_kmh} km/h). Ground stop delay: ${w.suggested_delay_minutes}m.`
+    );
+  };
 
   const loadWeather = async () => {
     try {
@@ -64,12 +65,11 @@ export const TriggerDisruptionModal: React.FC<TriggerDisruptionModalProps> = ({
     }
   };
 
-  const applyWeatherDelay = (w: AirportWeather) => {
-    setDelayMinutes(w.suggested_delay_minutes);
-    setDescription(
-      `Live Weather Disruption (${w.airport_name}): ${w.weather_description}, ${w.temperature_c}°C, wind ${w.wind_speed_kmh} km/h (gusts ${w.wind_gusts_kmh} km/h). Ground stop delay: ${w.suggested_delay_minutes}m.`
-    );
-  };
+  useEffect(() => {
+    if (isOpen && disruptionType === "weather" && airportWeatherList.length === 0) {
+      loadWeather();
+    }
+  }, [isOpen, disruptionType, airportWeatherList.length]);
 
   const handleSelectAirport = (code: string) => {
     setSelectedAirportCode(code);
