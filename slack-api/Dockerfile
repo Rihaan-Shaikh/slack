@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -e .
 COPY app/ ./app/
 
 # Expose port
-EXPOSE 7860
+EXPOSE 8000
 
 # Start Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
