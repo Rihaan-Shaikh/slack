@@ -4,8 +4,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routes import router
-
+from app.routers.trips import router as trips_router
+from app.routers.bookings import router as bookings_router
+from app.routers.disruptions import router as disruptions_router
+from app.routers.members import router as members_router
+from app.routers.core import router as core_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,8 +39,11 @@ app.add_middleware(
 )
 
 # Include routes
-app.include_router(router)
-
+app.include_router(trips_router)
+app.include_router(bookings_router)
+app.include_router(disruptions_router)
+app.include_router(members_router)
+app.include_router(core_router)
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "slack-api"}

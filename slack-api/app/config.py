@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "slack-api"
     debug: bool = False
-    database_url: str = "postgresql://postgres:2006@localhost:5432/slack_db"
+    database_url: str = "postgresql://postgres@localhost:5432/slack_db"
     tight_threshold_minutes: int = 30
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
