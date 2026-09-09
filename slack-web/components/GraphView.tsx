@@ -232,9 +232,6 @@ export const GraphView: React.FC<GraphViewProps> = ({
     atRiskTargetNodeIds, isReverseRippling, reverseStepIndex, setHoveredNode
   });
 
-  return () => observer.disconnect();
-  }, []);
-
   // Staggered timer to reveal ripple nodes sequentially in BFS order
   useEffect(() => {
     if (disruptedBookingId && ripplePath.length > 0) {

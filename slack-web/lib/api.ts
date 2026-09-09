@@ -352,7 +352,7 @@ export async function triggerLiveWeatherDisruption(
 
 
 export async function listResolvedDisruptions(tripId: string): Promise<Disruption[]> {
-  const response = await fetch(\\/trips/\/disruptions/resolved\, {
+  const response = await fetch(`${API_URL}/trips/${tripId}/disruptions/resolved`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
