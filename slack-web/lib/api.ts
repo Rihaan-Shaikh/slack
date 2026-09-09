@@ -351,3 +351,13 @@ export async function triggerLiveWeatherDisruption(
 }
 
 
+export async function listResolvedDisruptions(tripId: string): Promise<Disruption[]> {
+  const response = await fetch(\\/trips/\/disruptions/resolved\, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Failed to fetch resolved disruptions");
+  }
+  return response.json();
+}
