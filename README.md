@@ -30,12 +30,13 @@ flowchart TB
 
     subgraph Frontend["Next.js 16 Frontend"]
         UI[React UI + D3 Graph]
+        Hooks[Domain Hooks<br/>useTripState, etc.]
         API_Client[API Client]
         SSE_Listener[SSE Listener]
     end
 
     subgraph Backend["FastAPI Backend"]
-        Routes[REST API Routes]
+        Routers[Domain Routers<br/>Trips, Bookings, Disruptions]
         GraphEngine[Graph Builder<br/>NetworkX]
         RippleEngine[BFS Ripple Engine]
         RecoveryEngine[Recovery Scoring Engine]
@@ -70,12 +71,13 @@ flowchart TB
 
 | Component | Role |
 |---|---|
-| **Graph Builder** ([`graph.py`](slack-api/app/graph.py)) | Constructs a NetworkX DiGraph from bookings and dependencies, computing actual gap, slack, and edge status (safe/tight/violated) for every connection |
-| **Ripple Engine** ([`ripple.py`](slack-api/app/ripple.py)) | BFS traversal from a disrupted node outward, classifying severity per downstream booking by comparing pre- and post-disruption slack |
-| **Recovery Engine** ([`recovery.py`](slack-api/app/recovery.py)) | Generates 3 recovery candidates (rebook, shift, drop) with a transparent weighted scoring formula, optionally enriched with Groq LLM explanations |
-| **Heuristics** ([`heuristics.py`](slack-api/app/heuristics.py)) | Auto-suggests dependency edges when bookings are added, based on temporal proximity, location overlap, and booking-type-specific buffer rules |
-| **Event Bus** ([`events.py`](slack-api/app/events.py)) | In-memory pub/sub with per-trip SSE channels and presence heartbeat tracking |
-| **D3 Graph View** ([`GraphView.tsx`](slack-web/components/GraphView.tsx)) | Time-anchored SVG rendering with D3 zoom, animated ripple pulses, day-grouped layout, and measure-then-fit scaling |
+| **Domain Routers** (`slack-api/app/routers/`) | FastAPI REST + SSE endpoints split logically by domain (trips, bookings, disruptions, members) |
+| **Graph Builder** (`graph.py`) | Constructs a NetworkX DiGraph from bookings and dependencies, computing actual gap, slack, and edge status |
+| **Ripple Engine** (`ripple.py`) | BFS traversal from a disrupted node outward, classifying severity per downstream booking |
+| **Recovery Engine** (`recovery.py`) | Generates 3 recovery candidates (rebook, shift, drop) with a transparent weighted scoring formula |
+| **Event Bus** (`events.py`) | In-memory pub/sub with per-trip SSE channels and presence heartbeat tracking |
+| **D3 Graph View** (`GraphView.tsx`) | Responsive, time-anchored SVG rendering with D3 zoom, animated ripple pulses, and day-grouped layout |
+| **Frontend Hooks** (`slack-web/hooks/`) | Extracted modular state management (`useTripState`, `useDisruptionFlow`, `useD3Graph`) |
 
 ## Core Workflow: Disruption → Ripple → Recovery
 
@@ -160,30 +162,28 @@ slack/
 ├── schema.sql                    # PostgreSQL schema with RLS policies
 ├── slack-api/                    # FastAPI backend
 │   ├── app/
-│   │   ├── main.py               # Application entrypoint + CORS
-│   │   ├── config.py             # Pydantic settings (DATABASE_URL, thresholds)
-│   │   ├── routes.py             # All REST + SSE endpoints
+│   │   ├── main.py               # Application entrypoint + CORS setup
+│   │   ├── auth.py               # Shared JWT authentication dependency
+│   │   ├── config.py             # Pydantic settings
+│   │   ├── routers/              # Domain-specific REST + SSE endpoints
+│   │   ├── db/                   # Database CRUD operations per domain
 │   │   ├── models.py             # Pydantic request/response schemas
-│   │   ├── database.py           # PostgreSQL data access layer (psycopg2)
 │   │   ├── graph.py              # NetworkX graph construction + slack computation
 │   │   ├── ripple.py             # BFS disruption propagation engine
 │   │   ├── recovery.py           # Ranked recovery candidate generation + scoring
-│   │   ├── heuristics.py         # Auto-dependency suggestion engine
-│   │   ├── events.py             # SSE event bus + presence tracking
-│   │   └── demo.py               # Demo trip seeding + Open-Meteo integration
-│   └── tests/                    # Pytest test suite (27 tests)
+│   │   └── events.py             # SSE event bus + presence tracking
+│   └── tests/                    # Pytest test suite
 └── slack-web/                    # Next.js 16 frontend
-    ├── app/page.tsx              # Main application page + state orchestration
-    ├── components/               # 19 React components
-    │   ├── GraphView.tsx         # D3 SVG graph with pan/zoom/ripple animation
-    │   ├── ImpactSummaryPanel.tsx # Disruption impact + ranked recovery UI
-    │   ├── TripHeader.tsx        # Top navigation bar
-    │   ├── BookingModal.tsx      # Create/edit booking form
-    │   ├── DemoControlBar.tsx    # 1-click demo pitch controls
+    ├── app/
+    │   ├── page.tsx              # Landing page
+    │   ├── layout.tsx            # Global layout + next/font integrations
+    │   └── trips/[tripId]/       # Main workspace and settings routes
+    ├── components/               # React presentational components
+    │   ├── GraphView.tsx         # D3 SVG graph (responsive, touch-enabled)
+    │   ├── TripHeader.tsx        # Top navigation with Notifications & Presence
     │   └── ...
-    └── lib/
-        ├── api.ts                # Typed API client
-        └── types.ts              # TypeScript type definitions
+    ├── hooks/                    # Extracted logic (useTripState, useD3Graph, etc.)
+    └── lib/                      # Typed API client + Auth + Types
 ```
 
 ## Technology Stack
@@ -506,11 +506,13 @@ python -m pytest
 - **No rate limiting** — all endpoints are unthrottled
 - **Single-process architecture** — the event bus and presence tracking are not distributed
 
-### Recommended Hardening
+### Recommended Hardening & Deployment
 
+- **Frontend:** Vercel is the recommended and easiest way to deploy the Next.js frontend. Connect your GitHub repository to Vercel and it will automatically build and deploy.
+- **Backend:** **Fly.io** is highly recommended for the FastAPI backend and PostgreSQL database. Fly.io provides an excellent free tier and makes it easy to run a Postgres cluster alongside the FastAPI app using a standard `Dockerfile`.
+- **Database:** If not using Fly.io's Postgres, Supabase or Neon are great serverless PostgreSQL alternatives.
 - Integrate Supabase Auth or similar for JWT-based authentication
 - Replace in-memory event bus with Redis Pub/Sub for horizontal scaling
 - Add Alembic or similar for database migration management
 - Implement rate limiting on mutation endpoints
 - Add structured logging (e.g., structlog) and error monitoring (e.g., Sentry)
-- Add database connection pooling for production workloads
