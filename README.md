@@ -1,3 +1,12 @@
+---
+title: Slack Backend
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
 # Slack — Travel Disruption Recovery Engine
 
 A real-time travel itinerary management system that models trips as **dependency graphs**, where buffer time between bookings is edge slack. When a disruption hits — a delayed flight, a cancelled transfer — the engine propagates the impact through a BFS ripple wave, scores ranked recovery options, and lets travelers restore their schedule in seconds.
@@ -506,3 +515,4 @@ python -m pytest
 - **API Throttling:** There is no rate limiting on the REST API endpoints.
 - **Single Process:** The application is designed to run as a single process. Features like presence tracking and live collaboration are not distributed.
 - **Error Tracking & Logging:** Standard Python logging is used. There is no structured JSON logging or external error monitoring (like Sentry) integrated.
+

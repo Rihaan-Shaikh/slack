@@ -1,6 +1,6 @@
 ---
 title: Slack Backend
-emoji: ??
+emoji: 🚀
 colorFrom: blue
 colorTo: indigo
 sdk: docker
